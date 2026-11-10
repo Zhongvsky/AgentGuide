@@ -1,0 +1,80 @@
+site_name: AI Agent 开发工程实战
+site_description: 60天 AI Agent 与 Advanced RAG 工程落地指南
+site_author: AgentGuide
+docs_dir: learning
+
+theme:
+  name: material
+  language: zh
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: 切换至暗色模式
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: 切换至亮色模式
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+
+exclude_docs: |
+  **/*.py
+  **/*.pyc
+  **/*.index
+  **/*.json
+  **/__pycache__/**
+  **/_drafts/**
+  **/data/**
+  **/.dockerignore
+  **/Dockerfile
+  **/requirements.txt
+
+nav:
+  - 首页导读: index.md
+  - 学习进度与路线:
+      - 60天路线图: learning-roadmap.md
+      - 打卡进度追踪: learning-progress.md
+      - 自动化陪练规范: automation-prompt.md
+  - 每日学习任务卡:
+      - Day 01 - FastAPI 快速入门: learning-cards/Day-01-FastAPI快速入门.md
+      - Day 02 - LangChain 核心概念: learning-cards/Day-02-LangChain核心概念.md
+      - Day 03 - RAG 加载与分割: learning-cards/Day-03-RAG加载与分割.md
+      - Day 04 - RAG 向量化与存储: learning-cards/Day-04-RAG向量化与存储.md
+      - Day 05 - 手撕 Naive RAG 系统: learning-cards/Day-05-手撕NaiveRAG系统.md
+      - Day 06 - Naive RAG 接口封装: learning-cards/Day-06-NaiveRAG接口封装.md
+      - Day 07 - 周度总结与 Docker 部署: learning-cards/Day-07-周度总结与Docker部署.md
+      - Day 08 - Query Transformation: learning-cards/Day-08-QueryTransformation.md
+      - Day 09 - 混合检索与 Rerank: learning-cards/Day-09-HybridSearch-Rerank.md

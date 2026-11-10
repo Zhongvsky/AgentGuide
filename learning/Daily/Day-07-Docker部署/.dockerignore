@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+data.index
+data.json
+meta.json
+.git/
+.gitignore

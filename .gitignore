@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# MkDocs built site
+site/
+
+# Vector indices & large data files
+*.index
+*.faiss
+data.index
+data.json
+*.bin
+*.tar.gz
+
+# Environment variables & secrets
+.env
+.env.local
+
+# IDE & editors
+.vscode/
+.idea/
+.obsidian/workspace*
+
+# Legacy Agent tool
+.workbuddy/
+
+# Temporary files & logs
+*.log
+.DS_Store
+Thumbs.db
