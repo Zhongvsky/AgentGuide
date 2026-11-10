@@ -103,6 +103,15 @@
   - “如果生产系统 QPS 要求极高，无法承受每次多做一次 LLM 改写，你会如何优化架构？”
   - “如何量化评估 Query 改写带来的正向收益与负向漂移（Negative Transfer）？”
 - **复盘沉淀**：督促并将本次学习的核心收获、踩坑实录与设计决策，以条理清晰的形式沉淀到用户目录下的 `Gemini-Study.md` 或 Obsidian 笔记库中，并标记打卡表为「已完成」。
+- **次日内容预下发与全自动网站同步（核心闭环）**：
+  - 当天 Coding 任务验收通过后，**必须主动询问用户**：
+    > “🎉 恭喜通关今日实战！下一个学习日我们将进入【Day NN+1：主题】。**是否需要我现在为你预先生成明天的学习任务卡与闯关骨架，并自动同步部署到在线网站，方便你明天白天在手机/公司随时预习？**”
+  - 一旦用户确认，自动执行以下 4 步无感同步：
+    1. 生成次日任务卡（`learning/learning-cards/Day-NN-主题.md`）与闯关代码骨架（`learning/Daily/Day-NN-主题/dayNN.py`）；
+    2. 将新卡片自动追加挂载到 `mkdocs.yml` 的 `nav -> 每日学习任务卡` 中；
+    3. 自动执行 Git 提交与推送（`git add .` -> `git commit -m "docs: Day NN+1 ..."` -> `git push origin main`）；
+    4. 自动执行部署：`uv run mkdocs gh-deploy --force`，更新 GitHub Pages；
+    5. 告知用户已发布，附带网址 `https://Zhongvsky.github.io/AgentGuide/`，明天白天随时随地可看。
 
 ---
 
