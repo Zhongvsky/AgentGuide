@@ -162,9 +162,14 @@ def build_bm25_index(chunks: list[dict]) -> tuple[BM25Okapi, list[list[str]]]:
     4. 返回 (bm25_index, tokenized_corpus)。
     """
     # TODO 1: 请实现中文分词与 BM25 索引构建逻辑
-    raise NotImplementedError(
-        "【关卡 1 待实现】：请使用 jieba.lcut 构建 BM25Okapi 倒排索引！完成后删除本行。"
-    )
+    tokenized_corpus = []
+    for chunk in chunks:
+        text = chunk["text"]
+        tokenized_corpus.append(jieba.lcut(text))
+
+    bm25_index = BM25Okapi(tokenized_corpus)
+
+    return bm25_index, tokenized_corpus
 
 
 def bm25_retrieve(
@@ -186,9 +191,22 @@ def bm25_retrieve(
     4. 将命中的分块包装为 RetrievalResult 对象列表并返回。
     """
     # TODO 2: 请实现 BM25 查询打分与 Top-K 提取逻辑
-    raise NotImplementedError(
-        "【关卡 2 待实现】：请实现 bm25_retrieve 稀疏检索与 Top-K 打包！完成后删除本行。"
-    )
+    tokens_query = jieba.lcut(query)
+    scores = bm25.get_scores(tokens_query)
+    ids = np.argsort(scores)[::-1][:top_k]
+
+    results = []
+    for id in ids:
+        result = RetrievalResult(
+            chunk_id=id,
+            file=chunks[id]["file"],
+            score=scores[id],
+            text=chunks[id]["text"],
+            snippet=chunks[id]["text"][:80],
+        )
+        results.append(result)
+
+    return results
 
 
 def rrf_fusion(
@@ -218,9 +236,27 @@ def rrf_fusion(
     5. 重构 RetrievalResult 列表（注意将 score 更新为计算出的 RRF 得分），截取前 top_k 项返回。
     """
     # TODO 3: 请实现工业级 RRF 倒数排名融合算法
-    raise NotImplementedError(
-        "【关卡 3 待实现】：请实现 rrf_fusion 倒数排名融合算法！完成后删除本行。"
+    rrf_scores = {}
+    doc_map = {}
+    for rankings in rankings_list:
+        for rank, retrive_result in enumerate(rankings, start=1):
+            chunk_id = retrive_result.chunk_id
+            if rrf_scores.get(chunk_id):
+                rrf_scores[chunk_id] += 1 / (k + rank)
+            else:
+                rrf_scores[chunk_id] = 1 / (k + rank)
+            doc_map[chunk_id] = retrive_result
+    rrf_scores_sorted = dict(
+        sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
     )
+
+    results = []
+    for chunk_id, rrf_score in list(rrf_scores_sorted.items())[:top_k]:
+        item = doc_map[chunk_id]
+        result = item.model_copy(update={"score": rrf_score})
+        results.append(result)
+
+    return results
 
 
 def cross_encoder_rerank(
@@ -243,9 +279,22 @@ def cross_encoder_rerank(
     4. 将得分更新至各候选文档，按得分降序排序，截取最终 Top-K 返回。
     """
     # TODO 4: 请实现 Cross-Encoder 精排重排逻辑
-    raise NotImplementedError(
-        "【关卡 4 待实现】：请实现 cross_encoder_rerank 精排逻辑！完成后删除本行。"
-    )
+    if not candidates:
+        return []
+
+    pairs = []
+    for candidate in candidates:
+        pairs.append([query, candidate.text])
+
+    scores = reranker.predict(pairs)
+
+    reranked = [
+        cand.model_copy(update={"score": float(score)})
+        for cand, score in zip(candidates, scores)
+    ]
+    candidates_sorted = sorted(reranked, key=lambda x: x.score, reverse=True)
+
+    return candidates_sorted[:top_k]
 
 
 # ==========================================
@@ -291,12 +340,12 @@ def run_ab_comparison(
         # 粗排双路各取 Top-10 进候选池
         dense_candidates = dense_retrieve(q, index, chunks, embed_model, top_k=10)
         bm25_candidates = bm25_retrieve(q, bm25, chunks, top_k=10)
-        hybrid_res = rrf_fusion([dense_candidates, bm25_candidates], k=60, top_k=5)
+        hybrid_res = rrf_fusion([dense_candidates, bm25_candidates], k=60, top_k=10)
         t_hybrid = (time.perf_counter() - t0) * 1000
 
         # 4. Hybrid + Reranker 精排
         t0 = time.perf_counter()
-        # 将 RRF 融合出的 Top-5 候选送入 Cross-Encoder 进行终极精排，取 Top-3
+        # 将 RRF 融合出的 Top-10 候选送入 Cross-Encoder 进行终极精排，取 Top-3
         reranked_res = cross_encoder_rerank(
             q, candidates=hybrid_res, reranker=reranker, top_k=3
         )
@@ -381,6 +430,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[-] 未能加载本地 BAAI/bge-reranker-base ({e})")
         print("[*] 启用备用轻量 Cross-Encoder 作为演示环境...")
+
         # 优雅平滑降级：使用已缓存的 cross-encoder 或高拟真回退打分器
         class FallbackMockReranker:
             def predict(self, pairs: List[List[str]]) -> List[float]:

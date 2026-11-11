@@ -11,10 +11,10 @@
 
 ## 当前状态
 
-- **next_day**: 10（下一个待下发的学习日）
+- **next_day**: 11（下一个待下发的学习日）
 - **next_day 锁定**: 否（设为「是」时忽略自动推进，用于暂停或跳级）
-- **已下发学习日数**: 9
-- **已完成学习日数**: 8（Day 1-8，Advanced RAG 首日大获全胜）
+- **已下发学习日数**: 10
+- **已完成学习日数**: 9（Day 1-9，Advanced RAG 混合检索与重排大捷）
 - **连续未完成**: 0
 - **待下发草稿**: 无
 - **路线图**: learning/learning-roadmap.md
@@ -34,7 +34,8 @@
 | 6 | 2026-11-03 周二 | 手撕 Naive RAG 系统（后半：API 封装） | ①lifespan 加载索引 + `POST /ingest`、`POST /ask`（返回 answer + citations），uvicorn 起服务 /docs 可试 ②补三处遗留（-1 越界、meta.json 新鲜度校验、建库参数统一）并让 score/snippet 进响应 | 已完成 | 2026-11-04 实测复核 5 条中 4 条通过：/ingest 默认 200（chunks 12）、force 走 512/128 建 12 块、meta.json 指纹比对生效、citations 空列表已判空；**第 5 条（hit=false 保留 citations）未做**，降为 Day 7 卡内可选优化项 |
 | 7 | 2026-11-04 周三 | 周度总结与项目部署（Docker） | ①修完 Day 6 五条 → `/ingest` 返回 200 且 chunks 与 data.json 一致 ②day07.py + requirements + Dockerfile，build 后 `docker run` 容器内 `/ask` 返回 200 且 hit=true、citations 带分数 | 已完成 | Docker 镜像构建（3.42GB）+ 容器运行通过；掌握 WORKDIR/COPY/ENV/CMD 原理与层缓存优化；验证 host.docker.internal 宿主机网络穿透与模型烘焙技术；Swagger 网页端实测两问全链路闭环，首周里程碑收官 |
 | 8 | 2026-11-09 周一 | Query Transformation（查询改写与假设文档） | ①实现 Multi-Query 与 HyDE 链 ②A/B 对照 Naive 与改写后检索效果 | 已完成 | 手撕 Multi-Query 改写链与 HyDE 假设性文档生成；排查并修复 sorted 升序逆向缺陷与去重覆盖漏洞；实测验证 HyDE 跨流形检索使相似度由 0.5786 暴涨至 0.7448（+28.7%），全流程通过 A/B 量化验收 |
-| 9 | 2026-11-11 周三 | 混合检索与重排 (Rerank) | ①手撕 BM25 稀疏检索 + RRF 融合 ②集成 Cross-Encoder 精排并完成 A/B 对比 | 进行中 (顺延至11-11) | 待明日打卡后提炼 |
+| 9 | 2026-11-11 周三 | 混合检索与重排 (Rerank) | ①手撕 BM25 稀疏检索 + RRF 融合 ②集成 Cross-Encoder 精排并完成 A/B 对比 | 已完成 | 手撕 BM25 词频倒排与 RRF 无参数融合算法；排查并规避 Pydantic 引用就地篡改与 dict_items 视图切片缺陷；深入验证 Top-5 vs Top-10 候选池深度对精排召回的关键影响；Cross-Encoder 展现统治级全交叉注意力校正能力，以 0.9928 超高分连跨 7 个身位逆袭置顶真值，四路 A/B 对照实验圆满闭环 |
+| 10 | 2026-11-16 周一 | RAG 评估体系与 Ragas | ①手撕 Faithfulness 原子命题核验 ②手撕 Answer Relevancy 逆向生成评测 | 待完成 | 待下个学习日打卡后提炼 |
 
 ## 周度里程碑（按学习日，3 天/周节奏）
 
@@ -60,6 +61,8 @@
 
 - 连续 3 个学习日未完成时，需考虑把 next_day 回退 1-2 天巩固，而不是继续往前推
 - 当前欠账：**0 天**（首周 7 天全部收官闭环；今日正式开启第 2 周进阶篇）。
+- **2026-11-11 22:10 预下发 Day 10（周一 2026-11-16 学习日）**：用户确认预下发，新建 `Day-10-RAG评估体系.md`，初始化 `learning/Daily/Day-10-RAG评估体系/day10.py` 闯关骨架。next_day 10→11，已下发 9→10，已完成维持 9，连续未完成 0。挂载 `mkdocs.yml`，全自动同步 GitHub Pages。
+- **2026-11-11（周三）**：Day 9「混合检索与重排 (Hybrid Search & Reranking)」圆满收官！手撕四大核心模块（BM25 倒排索引构建、BM25 稀疏检索、RRF 倒数排名融合、Cross-Encoder 单塔全交叉重排）。敏锐排查并规避 Pydantic 引用就地篡改、dict_items 切片异常及排名起点偏移；深入验证 Top-5 vs Top-10 候选池深度对精排召回的影响；实测验证 Cross-Encoder 在粗排被词频污染严重带偏的情况下，以 0.9928 超高分连跨 7 个身位逆袭置顶真值（Chunk 2）。next_day 维持 10，已下发 9，已完成 8→9，连续未完成 0。代码与深度复盘笔记 `Gemini-Study.md` 已全量归档。
 - **2026-11-10 22:27 用户反馈疲惫，Day 9 实操顺延至明天（2026-11-11 周三）**：今晚不推进代码。打卡表日期由 11-10 改为 11-11 周三，状态标记为「进行中 (顺延至11-11)」。卡片与代码骨架已就绪，明天 11-11 自动化触发时将识别为已有今日任务，不重复生成卡片、不推进 Day 10，专注辅导 Day 9 混合检索与重排。
 - **2026-11-10（周二）**：正常下发 Day 9「混合检索与重排 (Hybrid Search & Reranking)」，next_day 9→10，已下发 8→9，已完成维持 8，连续未完成 0。卡片新建 `Day-09-HybridSearch-Rerank.md`，代码骨架已在 `learning/Daily/Day-09-HybridSearch-Rerank/day09.py` 初始化。设计 4 大手撕关卡（BM25 倒排索引构建、BM25 稀疏检索、RRF 倒数排名融合算法、Cross-Encoder 精排重排），严格遵循闯关打靶机制，参考实现折叠置底。
 - **2026-11-09（周一）**：正常下发并圆满验收 Day 8「Query Transformation（查询变换与假设性文档生成）」，手撕 Multi-Query 改写链与 HyDE 假设性文档生成，成功排查修复排序与去重逻辑，实测 A/B 对比闭环，Day 8 标记「已完成」。next_day 维持 9，已下发 8，已完成 8，连续未完成 0。代码与复盘笔记 `Gemini-Study.md` 已归档。
