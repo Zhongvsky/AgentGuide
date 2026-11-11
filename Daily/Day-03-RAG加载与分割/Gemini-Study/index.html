@@ -1,0 +1,1440 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="60天 AI Agent 与 Advanced RAG 工程落地指南">
+      
+      
+        <meta name="author" content="AgentGuide">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>RAG 文档解析与切分学习笔记：LlamaIndex Node Parser、Docling 与 MinerU - AI Agent 开发工程实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rag-llamaindex-node-parserdocling-mineru" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="AI Agent 开发工程实战" class="md-header__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Agent 开发工程实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RAG 文档解析与切分学习笔记：LlamaIndex Node Parser、Docling 与 MinerU
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至暗色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至暗色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页导读
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../learning-roadmap/" class="md-tabs__link">
+          
+  
+  
+  学习进度与路线
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-tabs__link">
+          
+  
+  
+  每日学习任务卡
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="AI Agent 开发工程实战" class="md-nav__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Agent 开发工程实战
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页导读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习进度与路线
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    学习进度与路线
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    60天路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打卡进度追踪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../automation-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自动化陪练规范
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    每日学习任务卡
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    每日学习任务卡
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 01 - FastAPI 快速入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-02-LangChain%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 02 - LangChain 核心概念
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-03-RAG%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%88%86%E5%89%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 03 - RAG 加载与分割
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-04-RAG%E5%90%91%E9%87%8F%E5%8C%96%E4%B8%8E%E5%AD%98%E5%82%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 04 - RAG 向量化与存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-05-%E6%89%8B%E6%92%95NaiveRAG%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 05 - 手撕 Naive RAG 系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-06-NaiveRAG%E6%8E%A5%E5%8F%A3%E5%B0%81%E8%A3%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 06 - Naive RAG 接口封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-07-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EDocker%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 07 - 周度总结与 Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-08-QueryTransformation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 08 - Query Transformation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-09-HybridSearch-Rerank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 09 - 混合检索与 Rerank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-10-RAG%E8%AF%84%E4%BC%B0%E4%BD%93%E7%B3%BB/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 10 - RAG 评估体系与 Ragas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#llamaindex-node-parserget-started-sentencesplitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、 今日主读：LlamaIndex Node Parser（Get Started + SentenceSplitter 参数详解）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="一、 今日主读：LlamaIndex Node Parser（Get Started + SentenceSplitter 参数详解）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-node-parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 核心概念：什么是 Node Parser？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-get-startedusage-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Get Started：三种标准使用模式（Usage Patterns）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 Get Started：三种标准使用模式（Usage Patterns）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1standalone-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 1：独立直接调用（Standalone Usage）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2transformation-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 2：作为转换流水线的一环（Transformation Usage）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3index-usage-vs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 3：构建索引时自动调用（Index Usage：全局配置 vs. 单索引配置）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-sentencesplitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 SentenceSplitter 参数全解与底层切分机制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 SentenceSplitter 参数全解与底层切分机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        完整参数速查表
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        必须掌握的 2 个底层机制（面试与实战高频踩坑点）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docling-pdf-day-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、 读懂即可：Docling 官方文档（PDF 版面与表格解析，Day 13 动手）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="二、 读懂即可：Docling 官方文档（PDF 版面与表格解析，Day 13 动手）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-docling-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Docling 是什么？为什么在 RAG 中需要它？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 核心架构：三大核心概念
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-day-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 极简代码印象（留作 Day 13 动手参考）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mineru-github-pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、 读懂即可：MinerU GitHub（中文与复杂 PDF 开源解析方案）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三、 读懂即可：MinerU GitHub（中文与复杂 PDF 开源解析方案）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-mineru" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 MinerU 是什么？核心优势在哪里？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-mineru-40-four-parsing-tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 MinerU 4.0 的四档解析体系（Four Parsing Tiers）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 三款工具在 RAG 链路中的定位与横向对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-your-understanding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、 今日学习自测清单（Check Your Understanding）
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="rag-llamaindex-node-parserdocling-mineru">RAG 文档解析与切分学习笔记：LlamaIndex Node Parser、Docling 与 MinerU</h1>
+<blockquote>
+<p><strong>学习导航与今日重点</strong>
+- <strong>[必读 &amp; 动手] 1. LlamaIndex Node Parser</strong>：重点掌握 <code>Get Started</code> 三种调用范式（独立使用、IngestionPipeline、Index 全局/局部配置）以及 <code>SentenceSplitter</code> 的完整参数、四级递归切分机制与元数据感知逻辑。
+- <strong>[读懂即可 · Day 13 动手] 2. Docling 官方文档</strong>：理解其基于 <code>DoclingDocument</code> 的统一文档抽象、PDF 版面分析（DocLayNet）与表格结构识别（TableFormer）流水线，以及与 LlamaIndex 的无缝衔接方式。
+- <strong>[读懂即可 · 复杂中文 PDF 方案] 3. MinerU (OpenDataLab)</strong>：理解其针对中文与复杂排版（多栏、跨页表格、公式、扫描件）的四档解析体系（Flash / Basic / Standard / Advanced）、引擎配置与 Agent 渐进式阅读协议。</p>
+</blockquote>
+<hr />
+<h2 id="llamaindex-node-parserget-started-sentencesplitter">一、 今日主读：LlamaIndex Node Parser（Get Started + SentenceSplitter 参数详解）</h2>
+<p><strong>官方文档来源</strong>：<a href="https://docs.llamaindex.ai/en/stable/module_guides/loading/node_parsers/">LlamaIndex Node Parser Usage Pattern</a> | <a href="https://docs.llamaindex.ai/en/stable/module_guides/loading/node_parsers/modules/">Node Parser Modules</a> | <a href="https://developers.llamaindex.ai/python/framework-api-reference/node_parsers/sentence_splitter/">SentenceSplitter API Reference</a></p>
+<h3 id="11-node-parser">1.1 核心概念：什么是 Node Parser？</h3>
+<p>在 LlamaIndex 中，<strong>Node Parser（节点解析器/切分器）</strong> 是将原始长文档（<code>Document</code> 对象列表）切分为更小的数据块（<code>Node</code> 对象，通常是 <code>TextNode</code>）的核心抽象组件：</p>
+<ul>
+<li><strong>属性自动继承</strong>：当一个父级 <code>Document</code> 被切分为多个子 <code>Node</code> 时，父文档的所有核心属性（包括 <code>metadata</code> 元数据字典、文本与元数据格式化模板 <code>text_template</code> / <code>metadata_template</code> 等）都会自动继承到每一个子 <code>Node</code> 中。</li>
+<li><strong>节点关系维护</strong>：默认情况下，Node Parser 会自动在切分出的相邻节点之间建立前后指针关系（<code>NodeRelationship.PREVIOUS</code> 和 <code>NodeRelationship.NEXT</code>），并记录指向源文档的引用（<code>NodeRelationship.SOURCE</code>）以及该切片在原文中的起止字符索引（<code>start_char_idx</code> / <code>end_char_idx</code>）。</li>
+</ul>
+<h3 id="12-get-startedusage-patterns">1.2 Get Started：三种标准使用模式（Usage Patterns）</h3>
+<p>官方文档在 <code>Getting Started</code> 部分明确给出了 Node Parser 在实际开发中的 <strong>3 种标准接入方式</strong>：</p>
+<h4 id="1standalone-usage">模式 1：独立直接调用（Standalone Usage）</h4>
+<p>最基础的用法，直接实例化 <code>SentenceSplitter</code>，调用 <code>.get_nodes_from_documents()</code> 将 <code>Document</code> 列表转化为 <code>Node</code> 列表，适合在构建索引前手动检查切分效果或自定义后处理：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Document</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.core.node_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">SentenceSplitter</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># 1. 初始化切分器：设置每个块最多 1024 个 Token，相邻块重叠 20 个 Token</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">node_parser</span> <span class="o">=</span> <span class="n">SentenceSplitter</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">chunk_overlap</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># 2. 传入 Document 列表，返回切分后的 Node 列表</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">nodes</span> <span class="o">=</span> <span class="n">node_parser</span><span class="o">.</span><span class="n">get_nodes_from_documents</span><span class="p">(</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="p">[</span><span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">"long text"</span><span class="p">)],</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="2transformation-usage">模式 2：作为转换流水线的一环（Transformation Usage）</h4>
+<p>由于 <code>NodeParser</code> 继承自 <code>TransformComponent</code> 基类，它可以和元数据提取器（Metadata Extractors）、Embedding 模型一起放入 <code>IngestionPipeline</code>（数据摄取流水线）中串联执行，支持缓存与并发处理：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDirectoryReader</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.core.ingestion</span><span class="w"> </span><span class="kn">import</span> <span class="n">IngestionPipeline</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.core.node_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">TokenTextSplitter</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">documents</span> <span class="o">=</span> <span class="n">SimpleDirectoryReader</span><span class="p">(</span><span class="s2">"./data"</span><span class="p">)</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># 将切分器放入 transformations 列表中按序执行</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">IngestionPipeline</span><span class="p">(</span><span class="n">transformations</span><span class="o">=</span><span class="p">[</span><span class="n">TokenTextSplitter</span><span class="p">(),</span> <span class="o">...</span><span class="p">])</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">nodes</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">documents</span><span class="o">=</span><span class="n">documents</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="3index-usage-vs">模式 3：构建索引时自动调用（Index Usage：全局配置 vs. 单索引配置）</h4>
+<p>如果你直接用 <code>VectorStoreIndex.from_documents()</code> 构建索引，可以通过全局 <code>Settings</code> 或局部 <code>transformations</code> 参数指定切分器：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDirectoryReader</span><span class="p">,</span> <span class="n">VectorStoreIndex</span><span class="p">,</span> <span class="n">Settings</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.core.node_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">SentenceSplitter</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">documents</span> <span class="o">=</span> <span class="n">SimpleDirectoryReader</span><span class="p">(</span><span class="s2">"./data"</span><span class="p">)</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># 方式 A：全局配置（Global Settings），后续所有索引构建默认生效</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">Settings</span><span class="o">.</span><span class="n">text_splitter</span> <span class="o">=</span> <span class="n">SentenceSplitter</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">chunk_overlap</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># 方式 B：单索引局部配置（Per-Index），仅对当前索引生效</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">index</span> <span class="o">=</span> <span class="n">VectorStoreIndex</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">documents</span><span class="p">,</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">transformations</span><span class="o">=</span><span class="p">[</span><span class="n">SentenceSplitter</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">chunk_overlap</span><span class="o">=</span><span class="mi">20</span><span class="p">)],</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h3 id="13-sentencesplitter">1.3 SentenceSplitter 参数全解与底层切分机制</h3>
+<p><code>SentenceSplitter</code>（继承自 <code>MetadataAwareTextSplitter</code>）是 LlamaIndex 默认且最常用的文本切分器。与按硬性 Token 数截断的 <code>TokenTextSplitter</code> 不同，<strong><code>SentenceSplitter</code> 优先保持完整的句子和段落边界</strong>，极大减少了块末尾出现“半截残句”的情况。</p>
+<h4 id="_1">完整参数速查表</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th style="text-align: left;">默认值</th>
+<th style="text-align: left;">核心作用与调优说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>chunk_size</code></strong></td>
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;"><code>1024</code></td>
+<td style="text-align: left;">每个切片（Chunk）的最大 <strong>Token 数量</strong>上限（必须 <code>&gt; 0</code>）。注意：这里包含注入该节点的 Metadata 占用的 Token 数。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>chunk_overlap</code></strong></td>
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;"><code>200</code></td>
+<td style="text-align: left;">相邻两个切片之间的重叠 <strong>Token 数量</strong>（必须 <code>&gt;= 0</code> 且 <code>&lt; chunk_size</code>）。注意：在官方示例代码中常手动传入 <code>20</code>，但类构造函数默认值为 <code>200</code>（<code>SENTENCE_CHUNK_OVERLAP</code>）。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>paragraph_separator</code></strong></td>
+<td style="text-align: left;"><code>str</code></td>
+<td style="text-align: left;"><code>'\n\n\n'</code></td>
+<td style="text-align: left;"><strong>一级段落分隔符</strong>。切分器最优先按此分隔符将文本拆成大段落。如果你的 Markdown/文本使用双换行分段，建议显式修改为 <code>'\n\n'</code>。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>chunking_tokenizer_fn</code></strong></td>
+<td style="text-align: left;"><code>Callable[[str], List[str]]</code></td>
+<td style="text-align: left;"><code>split_by_sentence_tokenizer()</code></td>
+<td style="text-align: left;"><strong>二级句子切分函数</strong>。当单个段落超过 <code>chunk_size</code> 时，调用此函数按句子边界拆分（默认基于 NLTK / Punkt 英文分句器）。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>secondary_chunking_regex</code></strong></td>
+<td style="text-align: left;"><code>str \| None</code></td>
+<td style="text-align: left;"><code>'[^,.;。？！]+[,.;。？！]?\|[,.;。？！]'</code></td>
+<td style="text-align: left;"><strong>三级标点正则回退</strong>。当单个长句依然超过 <code>chunk_size</code> 时，按中英文标点符号（逗号、句号、分号、感叹号、问号：<code>, . ; 。 ？ ！</code>）拆分为子句。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>separator</code></strong></td>
+<td style="text-align: left;"><code>str</code></td>
+<td style="text-align: left;"><code>' '</code></td>
+<td style="text-align: left;"><strong>四级单词/字符兜底分隔符</strong>。当标点切分后的子句仍超过 <code>chunk_size</code> 时，按空格拆分为单词（若依然超长则按底层字符/Token 强制切开）。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>tokenizer</code></strong></td>
+<td style="text-align: left;"><code>Callable</code></td>
+<td style="text-align: left;">全局默认 Tokenizer (<code>tiktoken</code>)</td>
+<td style="text-align: left;">用于计算文本和元数据 Token 长度的分词器函数。若不传，默认使用全局 <code>Settings.tokenizer</code>（通常为 OpenAI <code>cl100k_base</code>）。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>include_metadata</code></strong></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;"><code>True</code></td>
+<td style="text-align: left;">是否将父级 <code>Document</code> 的 <code>metadata</code> 继承到切分出的 <code>Node</code> 中，并在切分时启用<strong>元数据长度感知</strong>（扣除元数据占用的 Token）。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>include_prev_next_rel</code></strong></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;"><code>True</code></td>
+<td style="text-align: left;">是否在同源文档切分出的相邻 <code>Node</code> 之间自动建立 <code>PREVIOUS</code> 和 <code>NEXT</code> 双向链表关系。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>id_func</code></strong></td>
+<td style="text-align: left;"><code>Callable</code></td>
+<td style="text-align: left;"><code>default_id_func</code></td>
+<td style="text-align: left;">自定义生成每个 <code>Node</code> 唯一 ID 的函数。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>callback_manager</code></strong></td>
+<td style="text-align: left;"><code>CallbackManager</code></td>
+<td style="text-align: left;"><code>None</code></td>
+<td style="text-align: left;">用于追踪 <code>CBEventType.NODE_PARSING</code> 和 <code>CBEventType.CHUNKING</code> 事件的回调管理器。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2">必须掌握的 2 个底层机制（面试与实战高频踩坑点）</h4>
+<ol>
+<li><strong>四级递归降级切分 + 贪心合并机制（<code>_split</code> &amp; <code>_merge</code>）</strong>
+   <code>SentenceSplitter</code> 并不是一上来就把文章拆成碎句子，而是遵循<strong>自顶向下递归拆分、自底向上贪心合并</strong>的策略：</li>
+<li><strong>Step 1（检查总长）</strong>：如果整段文本的 Token 数 <code>&lt;= effective_chunk_size</code>，直接作为一个完整切片返回，不做任何拆分。</li>
+<li><strong>Step 2（四级拆分优先级）</strong>：若超长，按以下顺序逐级尝试切分，直到所有最小单元（<code>_Split</code>）的 Token 数均不超过上限：<ol>
+<li>按 <code>paragraph_separator</code>（默认 <code>\n\n\n</code>）切分段落；</li>
+<li>若某段落仍超长，按 <code>chunking_tokenizer_fn</code>（默认句子分词器）切分句子；</li>
+<li>若某句子仍超长（或中文文本未被英文分句器切开），按 <code>secondary_chunking_regex</code>（支持中文 <code>。？！</code> 及英文 <code>,.;</code>）切分子句；</li>
+<li>若仍超长，按 <code>separator</code>（默认空格 <code>' '</code>）及字符级回退切分。</li>
+</ol>
+</li>
+<li>
+<p><strong>Step 3（合并与重叠 <code>_merge</code>）</strong>：将拆出的细粒度句子按顺序贪心拼接，直到逼近 <code>effective_chunk_size</code> 生成一个 <code>Node</code>，同时根据 <code>chunk_overlap</code> 将当前块尾部的句子保留到下一个块的开头，确保上下文连贯。</p>
+</li>
+<li>
+<p><strong>元数据感知切分（Metadata-Aware Splitting）</strong>
+   因为 <code>SentenceSplitter</code> 继承自 <code>MetadataAwareTextSplitter</code>，当 <code>include_metadata=True</code> 时，调用 <code>split_text_metadata_aware</code> 会先计算该节点在送入 Embedding 或 LLM 时序列化后的 Metadata 字符串长度（取 <code>MetadataMode.EMBED</code> 和 <code>MetadataMode.LLM</code> 中较长者）：
+   $$\text{effective_chunk_size} = \text{chunk_size} - \text{len}(\text{tokenizer}(\text{metadata_str}))$$</p>
+</li>
+<li><strong>实战排错</strong>：如果你的 <code>Document.metadata</code> 塞入了过长的字段（例如把整篇摘要、长 URL 列表全放进 metadata），导致 <code>effective_chunk_size &lt;= 0</code>，LlamaIndex 会直接抛出 <code>ValueError: Metadata length (...) is longer than chunk size (...)</code>；若 <code>effective_chunk_size &lt; 50</code>，控制台会打印警告提示正文可用窗口不足 50 Tokens。</li>
+</ol>
+<hr />
+<h2 id="docling-pdf-day-13">二、 读懂即可：Docling 官方文档（PDF 版面与表格解析，Day 13 动手）</h2>
+<p><strong>官方文档来源</strong>：<a href="https://docling-project.github.io/docling/">Docling Official Documentation</a> | <a href="https://docling-project.github.io/docling/getting_started/quickstart/">Docling Quickstart</a> | <a href="https://docling-project.github.io/docling/concepts/architecture/">Docling Architecture</a></p>
+<h3 id="21-docling-rag">2.1 Docling 是什么？为什么在 RAG 中需要它？</h3>
+<p>如果直接用传统的 <code>pypdf</code> 提取 PDF 再交给 LlamaIndex 的 <code>SentenceSplitter</code>，双栏排版会左右串行、跨行表格会变成乱序文本。<strong>Docling</strong>（由 IBM Research Zurich 发起，现托管于 LF AI &amp; Data 基金会）是一个专门将各类复杂文档转化为生成式 AI 就绪格式（GenAI-ready）的开源解析工具：</p>
+<ul>
+<li><strong>多格式输入支持</strong>：原生支持 PDF、DOCX、PPTX、XLSX、HTML、EPUB、图片（PNG/JPEG/TIFF）、LaTeX、音频（WAV/MP3 经 Whisper ASR 转写）甚至视频文件。</li>
+<li><strong>深度 PDF 理解能力</strong>：</li>
+<li><strong>页面版面分析（Page Layout Analysis）</strong>：基于 <strong>DocLayNet</strong> 视觉模型识别标题、正文段落、页眉页脚、图表、公式区域，并还原正确的<strong>阅读顺序（Reading Order）</strong>。</li>
+<li><strong>表格结构识别（Table Structure Recognition）</strong>：内置 IBM 研发的 <strong>TableFormer</strong> 模型，能精准识别有线表、无线表、合并单元格（跨行/跨列），并完整还原为 Markdown 表格、HTML 或 DataFrame。</li>
+<li><strong>VLM 视觉大模型流水线与 OCR</strong>：支持本地运行轻量级视觉模型（如 <strong>GraniteDocling</strong>）以及多种 OCR 引擎（Tesseract、RapidOCR、SuryaOCR），支持扫描件解析与代码块/数学公式富化（Enrichment）。</li>
+<li><strong>本地离线与隐私安全</strong>：所有模型均可本地运行（支持 CPU、NVIDIA GPU 及 Apple Silicon MLX 加速），适合企业敏感数据与内网（Air-gapped）环境。</li>
+</ul>
+<h3 id="22">2.2 核心架构：三大核心概念</h3>
+<p>读懂 Docling 只需抓住其架构图中的 <strong>3 个核心抽象</strong>：</p>
+<ol>
+<li><strong><code>DocumentConverter</code>（文档转换器入口）</strong>：根据输入文件格式，自动路由到对应的 Format-specific Backend（格式解析后端）和 Pipeline（如标准视觉流水线 <code>StandardPipeline</code> 或视觉大模型流水线 <code>VlmPipeline</code>）。</li>
+<li><strong><code>DoclingDocument</code>（统一文档表示模型）</strong>：Docling 最核心的数据结构。无论输入是 PDF 还是 Word，转换后都会生成一个保留完整版面层级（章节树、表格矩阵、图片坐标、阅读顺序）的 <code>DoclingDocument</code> 对象。</li>
+<li><strong>导出与切分（Export &amp; HybridChunker）</strong>：</li>
+<li><strong>多样化导出</strong>：可直接调用 <code>doc.export_to_markdown()</code>、<code>export_to_html()</code>、<code>export_to_dict()</code>（无损 JSON）或 <code>DocTags</code>。</li>
+<li><strong>结构感知切分（<code>HybridChunker</code>）</strong>：Docling 自带 <code>HybridChunker</code>，并原生集成了 LlamaIndex（<code>DoclingReader</code> + <code>DoclingNodeParser</code>）。它在切分时直接利用 <code>DoclingDocument</code> 的版面树（保证同一个表格不被拦腰截断、标题自动附带到对应段落），比纯文本切分更精准。</li>
+</ol>
+<h3 id="23-day-13">2.3 极简代码印象（留作 Day 13 动手参考）</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling.document_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentConverter</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># 可以传入本地 PDF 路径或在线 URL</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">source</span> <span class="o">=</span> <span class="s2">"https://arxiv.org/pdf/2408.09869"</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">DocumentConverter</span><span class="p">()</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># 执行版面分析与表格识别，返回 DoclingDocument</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">doc</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="n">document</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># 一键导出为结构清晰的 Markdown（表格与标题层级完整保留）</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="nb">print</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">export_to_markdown</span><span class="p">())</span>
+</span></code></pre></div>
+<hr />
+<h2 id="mineru-github-pdf">三、 读懂即可：MinerU GitHub（中文与复杂 PDF 开源解析方案）</h2>
+<p><strong>官方文档来源</strong>：<a href="https://github.com/opendatalab/MinerU">MinerU GitHub Repository</a> | <a href="https://github.com/opendatalab/MinerU/blob/master/README_zh-CN.md">MinerU 中文 README</a> | <a href="https://opendatalab.github.io/MinerU/">MinerU 4.0 Documentation</a></p>
+<h3 id="31-mineru">3.1 MinerU 是什么？核心优势在哪里？</h3>
+<p><strong>MinerU</strong> 是由上海人工智能实验室 <strong>OpenDataLab</strong> 开源的高质量文档解析工具（GitHub 超 82.5k Stars，目前已迭代至 <strong>MinerU 4.0</strong>）。它专门解决大模型语料清洗与 Agent 工作流中的“硬骨头”文档：</p>
+<ul>
+<li><strong>中文与学术/复杂 PDF 表现优异</strong>：针对中文排版、双栏/多栏学术论文、复杂跨页表格、LaTeX 数学公式、扫描版古籍/教材做了深度优化，自动剔除页眉、页脚、页码与边注干扰。</li>
+<li><strong>统一文档模型与 9 种渲染目标</strong>：底层结合原生解析引擎（DocVortex）与多模态视觉模型，支持将 PDF、图片、Office（DOC/DOCX/PPT/XLS）、EPUB、中国政企常用的 <strong>OFD</strong> 格式统一转化为 <strong>Markdown、HTML、LaTeX、DOCX、EPUB、PDF、Structured Content、Content List V1/V2</strong> 等 9 种结构化输出。</li>
+<li><strong>Agent 原生文档库与定位符（Locator）</strong>：MinerU 4.0 不仅是一个无状态转换器（<code>mineru-kit parse</code>），还内置了面向 Agent 的本地文档库（<code>mineru</code> CLI 与 <code>DoclibClient</code>），支持按页/按块（Page/Block）渐进式读取，并生成稳定的引用定位符（如 <code>doc:ab12cd3/tier:standard/page:12/block:5</code>），方便 RAG 溯源与精准引用。</li>
+</ul>
+<h3 id="32-mineru-40-four-parsing-tiers">3.2 MinerU 4.0 的四档解析体系（Four Parsing Tiers）</h3>
+<p>MinerU 4.0 将解析质量与计算开销解耦为 <strong>4 个档位（Tiers）</strong>，可根据业务场景在速度与精度之间灵活权衡：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">解析档位 (Tier)</th>
+<th style="text-align: left;">中文名称</th>
+<th style="text-align: left;">底层引擎与硬件要求</th>
+<th style="text-align: left;">速度与质量特点</th>
+<th style="text-align: left;">适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>flash</code></strong></td>
+<td style="text-align: left;">极速解析</td>
+<td style="text-align: left;">原生解析（DocVortex），仅需 CPU</td>
+<td style="text-align: left;">速度最快，质量最基础（不跑重型视觉模型）</td>
+<td style="text-align: left;">快速预览、目录发现、全文初步索引，以及 Office/EPUB/OFD/HTML 原生本地解析</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>basic</code></strong></td>
+<td style="text-align: left;">基础解析</td>
+<td style="text-align: left;">小模型（ONNX CPU 仅需 2GB 内存，或 PyTorch）</td>
+<td style="text-align: left;">速度较快，提供基础 OCR 与版面模型解析</td>
+<td style="text-align: left;">低算力设备（纯 CPU 笔记本）上的本地隐私阅读与常规扫描件解析</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>standard</code></strong></td>
+<td style="text-align: left;">标准解析</td>
+<td style="text-align: left;">小模型 (ONNX/PyTorch) + VLM (<code>llama.cpp</code> Vulkan / <code>vLLM</code> / <code>LMDeploy</code>)</td>
+<td style="text-align: left;"><strong>默认推荐档位</strong>，高画质版面、表格与公式还原</td>
+<td style="text-align: left;">日常深度阅读、含复杂表格/公式的中文财报、技术手册与学术论文</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>advanced</code></strong></td>
+<td style="text-align: left;">高级解析</td>
+<td style="text-align: left;">与 Standard 共享模型栈，但投入更多推理步数与精细校验</td>
+<td style="text-align: left;">速度最慢，对疑难杂症版面质量最高</td>
+<td style="text-align: left;">排版极其复杂的扫描件、密集公式与高价值语料精洗</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-rag">3.3 三款工具在 RAG 链路中的定位与横向对比</h3>
+<p>为了帮你把今天看的 3 个资源串联成一个完整的知识体系，下面用一张表总结它们在 RAG（检索增强生成）工程中的分工与选型逻辑：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">维度</th>
+<th style="text-align: left;">LlamaIndex Node Parser (<code>SentenceSplitter</code>)</th>
+<th style="text-align: left;">Docling (IBM)</th>
+<th style="text-align: left;">MinerU (OpenDataLab)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>在 RAG 中的位置</strong></td>
+<td style="text-align: left;"><strong>下游：文本切分（Chunking）</strong></td>
+<td style="text-align: left;"><strong>上游：文档解析（Parsing）+ 结构切分</strong></td>
+<td style="text-align: left;"><strong>上游：文档解析（Parsing）+ Agent 阅读库</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>核心解决痛点</strong></td>
+<td style="text-align: left;">将长文本按语义/句子边界切分为固定 Token 窗口的 <code>Node</code>，维护上下文重叠与元数据继承</td>
+<td style="text-align: left;">将多格式文档（特别是英文/通用 PDF、Office）解析为结构化 <code>DoclingDocument</code> 并还原表格 (<code>TableFormer</code>)</td>
+<td style="text-align: left;">攻克<strong>中文复杂排版 PDF</strong>、双栏论文、密集公式、扫描件与 OFD，转化为干净的 Markdown/JSON</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>输入 → 输出</strong></td>
+<td style="text-align: left;"><code>Document</code> (纯文本) → <code>List[TextNode]</code></td>
+<td style="text-align: left;">PDF/DOCX/图片/音视频 → <code>DoclingDocument</code> / Markdown / JSON</td>
+<td style="text-align: left;">PDF/图片/Office/OFD → Markdown / LaTeX / JSON / <code>doc:...</code> 定位符</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>与 LlamaIndex 配合方式</strong></td>
+<td style="text-align: left;">LlamaIndex 核心内置组件（<code>llama_index.core.node_parser</code>）</td>
+<td style="text-align: left;">官方提供 <code>DoclingReader</code> 与 <code>DoclingNodeParser</code> 插件直接接入</td>
+<td style="text-align: left;">先用 <code>mineru-kit parse</code> 导出为高质量 Markdown，再用 LlamaIndex 的 <code>MarkdownNodeParser</code> + <code>SentenceSplitter</code> 二次切分</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="check-your-understanding">四、 今日学习自测清单（Check Your Understanding）</h2>
+<p>读完以上内容后，如果能回答出下面 3 个问题，说明今天的任务已经彻底掌握：</p>
+<ol>
+<li><strong>参数辨析</strong>：在 LlamaIndex 中，<code>SentenceSplitter(chunk_size=1024, chunk_overlap=20)</code> 切分超长段落时，默认优先按什么字符切分？如果切出来的单句依然超过 1024 Tokens，它会按什么顺序回退？</li>
+<li><em>参考答案</em>：最优先按 <code>paragraph_separator</code>（默认 <code>\n\n\n</code>）切分段落；若超长则按 <code>chunking_tokenizer_fn</code>（分句器）切分句子；若单句仍超长，按 <code>secondary_chunking_regex</code>（中英文句逗标点 <code>,.;。？！</code>）切分子句；最后按 <code>separator</code>（空格 <code>' '</code>）兜底。</li>
+<li><strong>元数据踩坑</strong>：为什么有时候明明把 <code>chunk_size</code> 设成了 <code>512</code>，调用 <code>SentenceSplitter</code> 却报错说 <code>Metadata length is longer than chunk size</code>？</li>
+<li><em>参考答案</em>：因为 <code>SentenceSplitter</code> 继承自 <code>MetadataAwareTextSplitter</code>（默认 <code>include_metadata=True</code>），它在切分正文前会自动用 <code>chunk_size</code> 减去序列化后的 <code>metadata</code> 占用的 Token 数（得出 <code>effective_chunk_size</code>），以保证最终拼上 Metadata 送入 Embedding 模型时不会超出模型上下文窗口。</li>
+<li><strong>工程组合拳</strong>：以后（比如 Day 13）面对一份包含大量跨页财务表格和中文说明的复杂 PDF 招股书，如果直接用普通 PDF 读取器 + <code>SentenceSplitter</code> 会有什么问题？应该如何把今天学的三个工具组合起来？</li>
+<li><em>参考答案</em>：普通读取器会丢失表格行列结构、混入页眉页脚，导致 <code>SentenceSplitter</code> 把表格数据切碎成毫无意义的乱码句子。最佳实践是：<strong>先用上游解析器（中文复杂版面优先选 MinerU 的 <code>standard</code> 档，通用多格式可选 Docling）将 PDF 解析为结构完整的 Markdown（保留表格与标题层级），再用 LlamaIndex 的 <code>MarkdownNodeParser</code> 或 <code>SentenceSplitter</code> 进行下游切分与入库</strong>。</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

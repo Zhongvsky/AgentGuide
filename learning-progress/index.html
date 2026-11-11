@@ -1,0 +1,1312 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="60天 AI Agent 与 Advanced RAG 工程落地指南">
+      
+      
+        <meta name="author" content="AgentGuide">
+      
+      
+      
+        <link rel="prev" href="../learning-roadmap/">
+      
+      
+        <link rel="next" href="../automation-prompt/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>打卡进度追踪 - AI Agent 开发工程实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#60" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href=".." title="AI Agent 开发工程实战" class="md-header__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Agent 开发工程实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              打卡进度追踪
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至暗色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至暗色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页导读
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../learning-roadmap/" class="md-tabs__link">
+          
+  
+  
+  学习进度与路线
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-tabs__link">
+          
+  
+  
+  每日学习任务卡
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AI Agent 开发工程实战" class="md-nav__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Agent 开发工程实战
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页导读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习进度与路线
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    学习进度与路线
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    60天路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打卡进度追踪
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打卡进度追踪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        节奏设定
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        当前状态
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        打卡记录
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        周度里程碑（按学习日，3 天/周节奏）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重复触发保护
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        欠账与调整记录
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../automation-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自动化陪练规范
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    每日学习任务卡
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    每日学习任务卡
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 01 - FastAPI 快速入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-02-LangChain%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 02 - LangChain 核心概念
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-03-RAG%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%88%86%E5%89%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 03 - RAG 加载与分割
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-04-RAG%E5%90%91%E9%87%8F%E5%8C%96%E4%B8%8E%E5%AD%98%E5%82%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 04 - RAG 向量化与存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-05-%E6%89%8B%E6%92%95NaiveRAG%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 05 - 手撕 Naive RAG 系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-06-NaiveRAG%E6%8E%A5%E5%8F%A3%E5%B0%81%E8%A3%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 06 - Naive RAG 接口封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-07-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EDocker%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 07 - 周度总结与 Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-08-QueryTransformation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 08 - Query Transformation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-09-HybridSearch-Rerank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 09 - 混合检索与 Rerank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-10-RAG%E8%AF%84%E4%BC%B0%E4%BD%93%E7%B3%BB/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 10 - RAG 评估体系与 Ragas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        节奏设定
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        当前状态
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        打卡记录
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        周度里程碑（按学习日，3 天/周节奏）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重复触发保护
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        欠账与调整记录
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="60">60 天学习进度追踪</h1>
+<h2 id="_1">节奏设定</h2>
+<ul>
+<li><strong>学习日</strong>：每周一、周二、周三推送（3 天/周）｜2026-10-22 起调整，原为周一至周四</li>
+<li><strong>休息日</strong>：每周四、周五、周六、周日，不推送、不推进 Day</li>
+<li><strong>start_date</strong>: 2026-10-20（周二，第 1 个学习日）</li>
+<li><strong>预计完成</strong>: 2027-03-09（周二，第 60 个学习日），全程约 20 周</li>
+<li>说明：「Day N」= 第 N 个学习日，<strong>不是自然日</strong>；进度只由 next_day 驱动，不按日期差推算</li>
+<li>起始周说明：10-19（周一）不计入，第 1 周实际只有 10-20、10-21 两个学习日；Day 3 从 2026-10-26 周一开始</li>
+</ul>
+<h2 id="_2">当前状态</h2>
+<ul>
+<li><strong>next_day</strong>: 11（下一个待下发的学习日）</li>
+<li><strong>next_day 锁定</strong>: 否（设为「是」时忽略自动推进，用于暂停或跳级）</li>
+<li><strong>已下发学习日数</strong>: 10</li>
+<li><strong>已完成学习日数</strong>: 9（Day 1-9，Advanced RAG 混合检索与重排大捷）</li>
+<li><strong>连续未完成</strong>: 0</li>
+<li><strong>待下发草稿</strong>: 无</li>
+<li><strong>路线图</strong>: learning/learning-roadmap.md</li>
+<li><strong>任务卡目录</strong>: learning/learning-cards/</li>
+<li><strong>当前阶段</strong>: 第 2 周 · Advanced RAG 与生产级向量数据库</li>
+</ul>
+<h2 id="_3">打卡记录</h2>
+<table>
+<thead>
+<tr>
+<th>Day</th>
+<th>学习日</th>
+<th>主题</th>
+<th>打卡项</th>
+<th>状态</th>
+<th>收获</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>—</td>
+<td>—</td>
+<td>（自 2026-10-20 起记录）</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>1</td>
+<td>2026-10-20 周二</td>
+<td>FastAPI 快速入门</td>
+<td>①Hello World 接口跑通 ②/chat 接口接 Pydantic 请求体</td>
+<td>已完成</td>
+<td>三路由（<code>/</code>、<code>/items/</code>、<code>/chat</code>）+ Pydantic 模型跑通，<code>/docs</code> 可直接调试</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2026-10-21 周三</td>
+<td>LangChain 核心概念</td>
+<td>①LCEL 跑通 prompt|model|parser 最小链 ②/chat 从 mock 换成真实 chain</td>
+<td>已完成</td>
+<td><code>init_chat_model</code> 接本地 127.0.0.1:9527，<code>/chat_lcel_invoke</code> 返回模型真实输出；<code>astream</code> 流式仍注释，留到第 4 周异步一起补</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2026-10-26 周一</td>
+<td>RAG Part 1：加载与分割</td>
+<td>①SimpleDirectoryReader 加载 PDF+MD 并打印 metadata ②SentenceSplitter 1024/200 与 256/30 对比块数与均值</td>
+<td>已完成</td>
+<td><code>split(size, overlap)</code> 抽出后跑出两组对照；<code>load_data()[0]</code> 已去掉，改为遍历全部 docs</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2026-10-27 周二</td>
+<td>RAG Part 2：向量化与存储</td>
+<td>①SentenceTransformer 编码 nodes 并对比相近/不相关句子余弦 ②FAISS IndexFlatIP 建索引→存盘→加载→3 个 query 检索 top-3</td>
+<td>已完成</td>
+<td>两组余弦对照 + IndexFlatIP 落盘重载 top-3 全跑通；自己踩出 <code>faiss.write_index</code> 中文路径报错，改用 <code>serialize_index</code> + Python 落盘</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2026-10-28 周三</td>
+<td>手撕 Naive RAG 系统（前半）</td>
+<td>①封装 build_index/load_index + faiss.index/chunks.json 落盘重载 ②answer(q) 端到端 3 问（可直答/换说法/文中没有）</td>
+<td>已完成</td>
+<td>端到端跑通：153 块建索引、3 问答案带 <code>[Doc n]</code> 引用、文外问题正确回「资料中未提及」；build/load/retrieve/answer 已分层，便于 Day 6 包 API</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2026-11-03 周二</td>
+<td>手撕 Naive RAG 系统（后半：API 封装）</td>
+<td>①lifespan 加载索引 + <code>POST /ingest</code>、<code>POST /ask</code>（返回 answer + citations），uvicorn 起服务 /docs 可试 ②补三处遗留（-1 越界、meta.json 新鲜度校验、建库参数统一）并让 score/snippet 进响应</td>
+<td>已完成</td>
+<td>2026-11-04 实测复核 5 条中 4 条通过：/ingest 默认 200（chunks 12）、force 走 512/128 建 12 块、meta.json 指纹比对生效、citations 空列表已判空；<strong>第 5 条（hit=false 保留 citations）未做</strong>，降为 Day 7 卡内可选优化项</td>
+</tr>
+<tr>
+<td>7</td>
+<td>2026-11-04 周三</td>
+<td>周度总结与项目部署（Docker）</td>
+<td>①修完 Day 6 五条 → <code>/ingest</code> 返回 200 且 chunks 与 data.json 一致 ②day07.py + requirements + Dockerfile，build 后 <code>docker run</code> 容器内 <code>/ask</code> 返回 200 且 hit=true、citations 带分数</td>
+<td>已完成</td>
+<td>Docker 镜像构建（3.42GB）+ 容器运行通过；掌握 WORKDIR/COPY/ENV/CMD 原理与层缓存优化；验证 host.docker.internal 宿主机网络穿透与模型烘焙技术；Swagger 网页端实测两问全链路闭环，首周里程碑收官</td>
+</tr>
+<tr>
+<td>8</td>
+<td>2026-11-09 周一</td>
+<td>Query Transformation（查询改写与假设文档）</td>
+<td>①实现 Multi-Query 与 HyDE 链 ②A/B 对照 Naive 与改写后检索效果</td>
+<td>已完成</td>
+<td>手撕 Multi-Query 改写链与 HyDE 假设性文档生成；排查并修复 sorted 升序逆向缺陷与去重覆盖漏洞；实测验证 HyDE 跨流形检索使相似度由 0.5786 暴涨至 0.7448（+28.7%），全流程通过 A/B 量化验收</td>
+</tr>
+<tr>
+<td>9</td>
+<td>2026-11-11 周三</td>
+<td>混合检索与重排 (Rerank)</td>
+<td>①手撕 BM25 稀疏检索 + RRF 融合 ②集成 Cross-Encoder 精排并完成 A/B 对比</td>
+<td>已完成</td>
+<td>手撕 BM25 词频倒排与 RRF 无参数融合算法；排查并规避 Pydantic 引用就地篡改与 dict_items 视图切片缺陷；深入验证 Top-5 vs Top-10 候选池深度对精排召回的关键影响；Cross-Encoder 展现统治级全交叉注意力校正能力，以 0.9928 超高分连跨 7 个身位逆袭置顶真值，四路 A/B 对照实验圆满闭环</td>
+</tr>
+<tr>
+<td>10</td>
+<td>2026-11-16 周一</td>
+<td>RAG 评估体系与 Ragas</td>
+<td>①手撕 Faithfulness 原子命题核验 ②手撕 Answer Relevancy 逆向生成评测</td>
+<td>待完成</td>
+<td>待下个学习日打卡后提炼</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3">周度里程碑（按学习日，3 天/周节奏）</h2>
+<table>
+<thead>
+<tr>
+<th>里程碑</th>
+<th>学习日</th>
+<th>日历日期</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第 1 周收尾</td>
+<td>Day 7</td>
+<td>2026-11-04 周三</td>
+<td>Naive RAG 项目 Docker 化跑通</td>
+</tr>
+<tr>
+<td>第 2 周收尾</td>
+<td>Day 14</td>
+<td>2026-11-23 周一</td>
+<td>混合检索 + Reranker + Milvus 升级完成</td>
+</tr>
+<tr>
+<td>第 3 周收尾</td>
+<td>Day 21</td>
+<td>2026-12-08 周二</td>
+<td>研究助手 Agent 完成</td>
+</tr>
+<tr>
+<td>第 4 周收尾</td>
+<td>Day 28</td>
+<td>2026-12-23 周三</td>
+<td>压测报告（QPS / P99）</td>
+</tr>
+<tr>
+<td>第 5 周收尾</td>
+<td>Day 35</td>
+<td>2027-01-11 周一</td>
+<td>整套系统 Compose 一键部署</td>
+</tr>
+<tr>
+<td>第 6 周收尾</td>
+<td>Day 42</td>
+<td>2027-01-26 周二</td>
+<td>AutoGen + CrewAI 双框架跑通</td>
+</tr>
+<tr>
+<td>全周期收尾</td>
+<td>Day 60</td>
+<td>2027-03-09 周二</td>
+<td>两个项目 + 简历 + 模拟面试</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_4">重复触发保护</h2>
+<ul>
+<li>每次运行先检查打卡表里是否已有「学习日日期 == 今天」的记录</li>
+<li>已有 → 不新建卡片、不追加记录、不推进 next_day，只回一句「今天已下发 Day N」</li>
+<li>手动提前触发后，8:00 的定时仍会照常触发，靠上述检查挡住第二次</li>
+<li>唯一例外：明确要求「重新生成今天的任务」时覆盖卡片，但仍不推进 next_day</li>
+<li><strong>周四/周五/周六/周日</strong>：不推进新内容；若被手动触发，只输出休息日复盘卡，绝不消耗 next_day</li>
+</ul>
+<h2 id="_5">欠账与调整记录</h2>
+<ul>
+<li>连续 3 个学习日未完成时，需考虑把 next_day 回退 1-2 天巩固，而不是继续往前推</li>
+<li>当前欠账：<strong>0 天</strong>（首周 7 天全部收官闭环；今日正式开启第 2 周进阶篇）。</li>
+<li><strong>2026-11-11 22:10 预下发 Day 10（周一 2026-11-16 学习日）</strong>：用户确认预下发，新建 <code>Day-10-RAG评估体系.md</code>，初始化 <code>learning/Daily/Day-10-RAG评估体系/day10.py</code> 闯关骨架。next_day 10→11，已下发 9→10，已完成维持 9，连续未完成 0。挂载 <code>mkdocs.yml</code>，全自动同步 GitHub Pages。</li>
+<li><strong>2026-11-11（周三）</strong>：Day 9「混合检索与重排 (Hybrid Search &amp; Reranking)」圆满收官！手撕四大核心模块（BM25 倒排索引构建、BM25 稀疏检索、RRF 倒数排名融合、Cross-Encoder 单塔全交叉重排）。敏锐排查并规避 Pydantic 引用就地篡改、dict_items 切片异常及排名起点偏移；深入验证 Top-5 vs Top-10 候选池深度对精排召回的影响；实测验证 Cross-Encoder 在粗排被词频污染严重带偏的情况下，以 0.9928 超高分连跨 7 个身位逆袭置顶真值（Chunk 2）。next_day 维持 10，已下发 9，已完成 8→9，连续未完成 0。代码与深度复盘笔记 <code>Gemini-Study.md</code> 已全量归档。</li>
+<li><strong>2026-11-10 22:27 用户反馈疲惫，Day 9 实操顺延至明天（2026-11-11 周三）</strong>：今晚不推进代码。打卡表日期由 11-10 改为 11-11 周三，状态标记为「进行中 (顺延至11-11)」。卡片与代码骨架已就绪，明天 11-11 自动化触发时将识别为已有今日任务，不重复生成卡片、不推进 Day 10，专注辅导 Day 9 混合检索与重排。</li>
+<li><strong>2026-11-10（周二）</strong>：正常下发 Day 9「混合检索与重排 (Hybrid Search &amp; Reranking)」，next_day 9→10，已下发 8→9，已完成维持 8，连续未完成 0。卡片新建 <code>Day-09-HybridSearch-Rerank.md</code>，代码骨架已在 <code>learning/Daily/Day-09-HybridSearch-Rerank/day09.py</code> 初始化。设计 4 大手撕关卡（BM25 倒排索引构建、BM25 稀疏检索、RRF 倒数排名融合算法、Cross-Encoder 精排重排），严格遵循闯关打靶机制，参考实现折叠置底。</li>
+<li><strong>2026-11-09（周一）</strong>：正常下发并圆满验收 Day 8「Query Transformation（查询变换与假设性文档生成）」，手撕 Multi-Query 改写链与 HyDE 假设性文档生成，成功排查修复排序与去重逻辑，实测 A/B 对比闭环，Day 8 标记「已完成」。next_day 维持 9，已下发 8，已完成 8，连续未完成 0。代码与复盘笔记 <code>Gemini-Study.md</code> 已归档。</li>
+<li><strong>2026-11-04（周三）</strong>：正常下发 Day 7「周度总结与项目部署（Docker）」，next_day 7→8，已下发 6→7，已完成维持 5，连续未完成 1→2。无草稿（<code>_drafts/</code> 为空），卡片新建 <code>Day-07-周度总结与Docker部署.md</code>。环境核查：<code>docker --version</code> = 29.3.1，但 <code>docker info</code> 报守护进程未连接（Docker Desktop 未启动），卡片已把「先起 Docker Desktop」列为开工第一步；语料仍为 <code>data/</code> 下单个《差旅费管理办法》9.7KB。<strong>升级条件</strong>：若 Day 6 五条明天仍未修完，next_day 8→7 回退，用下周一（11-09）只做「修 5条 + 复验 /ingest」。</li>
+<li><strong>2026-11-03 22:30 验收 Day 6（未通过，判「基本达成」）</strong>：核查 <code>day06.py</code> + 用 <code>.venv</code> 实起 <code>uvicorn day06:app --port 8011</code> 逐项实测。<strong>通过</strong>：lifespan + <code>app.state</code> 传参、<code>/docs</code> 200、<code>/ask</code> 三问全 200 且 citations 带真实分数与 snippet、文外问题 <code>hit=false</code>+空 citations+「资料中未提及」、<code>def</code>（非 async）避开事件循环阻塞、<code>local_files_only=True</code>、FAISS <code>-1</code> 越界已过滤。实测分数分离度：域内 0.678-0.734，域外 0.202-0.282，<code>hit_thresh=0.5</code> 落在间隙中，判为合理。<strong>未通过 3 项</strong>：①<code>/ingest</code> 默认路径（force=false）实测 <strong>HTTP 500</strong>——<code>chunks</code> 只在 force 分支赋值，<code>return</code> 里 <code>len(chunks)</code> 触发 UnboundLocalError ②<code>/ingest?force=true</code> 用 64/32，实测产出 <strong>2323 块、平均 14 字</strong>（参数第四套，比 Day 5 的 256/16 更差，且会覆盖原索引）③<code>meta.json</code> 新鲜度校验<strong>完全未做</strong>。次要项：<code>top_k=0</code> 时 <code>citations[0]</code> 500、<code>hit=false</code> 时清空 citations 丢掉实际最高分（无法校准阈值）、hit=false 分支的 <code>prompt</code> 构造后未使用、<code>Citation.doc_id</code> 描述「从1开始」但实际传 0 基 idx、语料换成《差旅费管理办法》与 Day 5 的 153 块不同源导致基线不可比。→ 状态「待完成」，已完成维持 5，连续未完成维持 1。</li>
+<li><strong>2026-11-03 22:32 用户决定：Day 6 的 5 条修复延到明天做</strong>，今晚不再改代码。处理方式：明天不新开 Day，把 5 条修复折进 Day 7 卡片的前置 15 分钟（Day 7 只有一天且是 Docker 日，带 500 端点进镜像无法验收），修完即把 Day 6 标「已完成」。</li>
+<li><strong>2026-11-03（周二）</strong>：正常下发 Day 6「手撕 Naive RAG（后半：FastAPI 接口封装）」，next_day 6→7，已下发 5→6，连续未完成 0→1。无草稿，卡片新建 <code>Day-06-NaiveRAG接口封装.md</code>。<strong>注意：本周一 11-02 的定时下发未触发（执行记录里无该日条目），本周只有 11-03 与 11-04 两个学习日</strong>，故 Day 6 落在今天、Day 7（Docker）落在明天 11-04。里程碑表已按实际下发重算：Day 7=11-04、14=11-23、21=12-08、28=12-23、35=2027-01-11、42=2027-01-26、60=2027-03-09（原表日期偏早约一周，已一并校正）。</li>
+<li><strong>2026-11-01（周日，休息日）用户主动反馈验收</strong>：Day 3/4/5 三行改「已完成」，已完成 2→5，连续未完成 2→0，next_day 维持 6、已下发维持 5。核查方式：读 <code>day03.py</code>/<code>day04.py</code>/<code>day05.py</code>，并用 <code>.venv</code> 实跑 <code>day05.py</code>（本地 9527 在线），三问全部产出、文外问题正确兜底。</li>
+<li>Day 5 遗留改进项（不阻塞验收，已并入 Day 6 卡片）：①不打印命中块与分数，引用无法自证 ②query 丢了 bge 指令前缀 ③建库参数 256/16 与 Day 3 对照的 256/30、Day 4 的 512/128 三套不一致 ④索引无新鲜度校验（改 data 或换参数仍复用旧索引）⑤<code>chunks[i]</code> 未处理 FAISS 返回 -1 的越界情况。</li>
+<li><strong>2026-10-28（周三）</strong>：正常下发 Day 5「手撕 Naive RAG 系统（前半）」，next_day 5→6，已下发 4→5，连续未完成 1→2。无草稿，卡片新建 <code>Day-05-手撕NaiveRAG系统.md</code>。因 Day 5 端到端问答必须依赖索引，卡片顶部标欠账提醒，并把 Day 3/4 的补做折进今日 0:00-0:30 前置时段（不额外回退 next_day）。<strong>升级条件</strong>：若下次运行 Day 3/4/5 仍全待完成（连续 3 天），先把 next_day 从 6 回退到 5，用 Day 5 只做索引与检索验收，再推 Day 6。</li>
+<li><strong>2026-10-27（周二）</strong>：正常下发 Day 4「RAG Part 2：向量化与存储」，next_day 4→5，已下发 3→4，连续未完成 0→1。无草稿可复用，卡片新建。Day 4 卡内已写 15 分钟补做 Day 3 的对照实验；已确认 Day 3 代码存在但只完成一半打卡项，故未标已完成。</li>
+<li><strong>2026-10-26 19:10 用户反馈「Day 1、Day 2 已完成」</strong>：两行状态改「已完成」并补收获，已完成 0→2，连续未完成 3→0，next_day 维持 4。遗留：Day 2 的 <code>astream</code> 流式分支仍是注释状态，不阻塞本周，并入第 4 周异步专题一起补。</li>
+<li><strong>2026-10-26（周一）</strong>：正常下发 Day 3（草稿复用，未重写），next_day 3→4，已下发 2→3。连续未完成达 3（Day 1/2 代码已在 <code>learning/Daily/</code> 且有 <code>__pycache__</code>，判定为「未验收」），按原计划在 Day 3 卡内置 15 分钟补验收；若 Day 4 下发前 Day 1/2 仍无验收反馈，则把 next_day 从 4 回退到 3，用 Day 4 补验收。</li>
+<li>2026-10-22：连续未完成达 3，但核查到 <code>learning/Daily/Day-01.../day01.py</code>、<code>Day-02.../day02.py</code> 已存在且有 <code>__pycache__</code>，判定为「未验收」而非「未学」，故未回退 next_day，改为在 Day 3 卡内置 15 分钟补验收</li>
+<li><strong>2026-10-22 节奏调整（用户要求）</strong>：周四也改为休息日，推送日 = 周一/周二/周三。已撤销当天下发：删除 Day 3 打卡行、next_day 4→3、已下发 3→2；Day 3 卡片（RAG Part 1 加载与分割）已写好并移入 <code>_drafts/</code>，10-26 周一直接下发，不重新生成。里程碑日期与预计完成日已按 3 天/周重算（Day 60 = 2027-03-08）</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

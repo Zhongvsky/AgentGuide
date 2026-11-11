@@ -1,0 +1,1563 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="60天 AI Agent 与 Advanced RAG 工程落地指南">
+      
+      
+        <meta name="author" content="AgentGuide">
+      
+      
+      
+        <link rel="prev" href="../Day-05-%E6%89%8B%E6%92%95NaiveRAG%E7%B3%BB%E7%BB%9F/">
+      
+      
+        <link rel="next" href="../Day-07-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EDocker%E9%83%A8%E7%BD%B2/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Day 06 - Naive RAG 接口封装 - AI Agent 开发工程实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day-06-naive-rag-fastapi" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AI Agent 开发工程实战" class="md-header__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Agent 开发工程实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Day 06 - Naive RAG 接口封装
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至暗色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至暗色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页导读
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../learning-roadmap/" class="md-tabs__link">
+          
+  
+  
+  学习进度与路线
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-tabs__link">
+          
+  
+  
+  每日学习任务卡
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AI Agent 开发工程实战" class="md-nav__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Agent 开发工程实战
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页导读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习进度与路线
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    学习进度与路线
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    60天路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打卡进度追踪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../automation-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自动化陪练规范
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    每日学习任务卡
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    每日学习任务卡
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 01 - FastAPI 快速入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-02-LangChain%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 02 - LangChain 核心概念
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-03-RAG%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%88%86%E5%89%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 03 - RAG 加载与分割
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-04-RAG%E5%90%91%E9%87%8F%E5%8C%96%E4%B8%8E%E5%AD%98%E5%82%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 04 - RAG 向量化与存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-05-%E6%89%8B%E6%92%95NaiveRAG%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 05 - 手撕 Naive RAG 系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 06 - Naive RAG 接口封装
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 06 - Naive RAG 接口封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        今日主题 + 学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        资源清单（3 条）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25-40-40-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        时间安排建议（约 2.5 小时 · 40% 读 / 40% 写 / 20% 记录）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        今日手撕打卡项
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        验收标准
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#day-5-2026-10-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        昨日回顾（Day 5 · 2026-10-28）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        进度提示
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2026-11-03-2230" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        验收结果（2026-11-03 22:30 实测 · 基本达成，未通过）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="验收结果（2026-11-03 22:30 实测 · 基本达成，未通过）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20 分钟补做清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        笔记区
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="笔记区">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        今日卡点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        关键代码片段
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        待补知识
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-fastapi-def-vs-async-defencode-cpu-def-async-def" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        - FastAPI def vs async def：encode() 是 CPU 阻塞，放 def 走线程池，放 async def 会卡住事件循环 —— 待实测确认
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="- FastAPI def vs async def：encode() 是 CPU 阻塞，放 def 走线程池，放 async def 会卡住事件循环 —— 待实测确认">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自测记录
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-07-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EDocker%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 07 - 周度总结与 Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-08-QueryTransformation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 08 - Query Transformation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-09-HybridSearch-Rerank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 09 - 混合检索与 Rerank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Day-10-RAG%E8%AF%84%E4%BC%B0%E4%BD%93%E7%B3%BB/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 10 - RAG 评估体系与 Ragas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        今日主题 + 学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        资源清单（3 条）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25-40-40-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        时间安排建议（约 2.5 小时 · 40% 读 / 40% 写 / 20% 记录）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        今日手撕打卡项
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        验收标准
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#day-5-2026-10-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        昨日回顾（Day 5 · 2026-10-28）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        进度提示
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2026-11-03-2230" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        验收结果（2026-11-03 22:30 实测 · 基本达成，未通过）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="验收结果（2026-11-03 22:30 实测 · 基本达成，未通过）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20 分钟补做清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        笔记区
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="笔记区">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        今日卡点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        关键代码片段
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        待补知识
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-fastapi-def-vs-async-defencode-cpu-def-async-def" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        - FastAPI def vs async def：encode() 是 CPU 阻塞，放 def 走线程池，放 async def 会卡住事件循环 —— 待实测确认
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="- FastAPI def vs async def：encode() 是 CPU 阻塞，放 def 走线程池，放 async def 会卡住事件循环 —— 待实测确认">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自测记录
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="day-06-naive-rag-fastapi">Day 06 · 手撕 Naive RAG 系统（后半段：FastAPI 接口封装）</h1>
+<blockquote>
+<p>2026-11-03（周二）｜第 6 / 60 个学习日｜第 1 周 · 大模型应用开发基础 + 手撕 Naive RAG</p>
+</blockquote>
+<h2 id="_1">今日主题 + 学习目标</h2>
+<p><strong>主题</strong>：手撕 Naive RAG 系统（Day 5-6 合并行，今天做后半段：把昨天跑通的脚本包成 HTTP 接口）
+<strong>目标</strong>：整合 FastAPI + LangChain，完成端到端文档问答 <strong>API</strong></p>
+<p>递进关系：Day 1 学会了路由 + Pydantic 请求体，Day 5 把 retrieve → context → LLM 跑通成脚本。今天这两件事第一次合体：<strong>把 <code>day05.py</code> 里函数式的 <code>build_index</code> / <code>retrieve</code> / <code>answer</code> 换个入口暴露出去</strong>，逻辑一行不改，只是从「<code>python day05.py</code> 打印到 stdout」变成「<code>POST /ask</code> 返回 JSON」。</p>
+<p>今天不新增算法，只做三件事：接口化、让引用能自证、把 Day 5 留下的三处硬伤补掉。产出直接是 Day 7 Docker 化的镜像内容——Day 7 要 <code>docker run</code> 一个能问的容器，今天必须有 <code>uvicorn</code> 能起的入口。</p>
+<h2 id="3">资源清单（3 条）</h2>
+<ol>
+<li><strong>FastAPI · Request Body</strong>（今天最需要的一节：<code>BaseModel</code> 嵌套、<code>Field</code> 校验，用来定义 <code>/ask</code> 的响应结构）：<a href="https://fastapi.tiangolo.com/tutorial/body/">https://fastapi.tiangolo.com/tutorial/body/</a></li>
+<li><strong>FastAPI · Response Model</strong>（<code>response_model</code> 与返回 dict 的区别，决定你的 <code>citations</code> 字段会不会被悄悄裁掉）：<a href="https://fastapi.tiangolo.com/tutorial/response-model/">https://fastapi.tiangolo.com/tutorial/response-model/</a></li>
+<li><strong>FastAPI · Lifespan Events</strong>（索引只在启动时加载一次，不要每个请求都读盘；替代已弃用的 <code>@app.on_event</code>）：<a href="https://fastapi.tiangolo.com/advanced/events/">https://fastapi.tiangolo.com/advanced/events/</a></li>
+</ol>
+<blockquote>
+<p>栈不变：<code>fastapi[standard]</code> 已在 <code>pyproject.toml</code> 里，<code>uvicorn</code> 随 standard 一起装了，<strong>今天不新增依赖</strong>。向量仍用 <code>faiss.IndexFlatIP</code> + <code>data.index</code>/<code>data.json</code>，模型仍是本地 <code>127.0.0.1:9527</code>。</p>
+</blockquote>
+<h2 id="25-40-40-20">时间安排建议（约 2.5 小时 · 40% 读 / 40% 写 / 20% 记录）</h2>
+<table>
+<thead>
+<tr>
+<th>时段</th>
+<th>内容</th>
+<th>类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0:00-0:15</td>
+<td><strong>前置补账</strong>：把 Day 5 的三处遗留改掉（见打卡项 2），不改逻辑只加防御与打印</td>
+<td>动手</td>
+</tr>
+<tr>
+<td>0:15-1:10</td>
+<td>读上面三节文档，只回答三个问题：① 索引该放哪（lifespan 还是每个请求）② <code>response_model</code> 里 <code>list[Citation]</code> 怎么声明 ③ 同步函数 <code>def</code> 和 <code>async def</code> 在 FastAPI 里对阻塞 IO 的区别</td>
+<td>读懂即可</td>
+</tr>
+<tr>
+<td>1:10-2:15</td>
+<td>写 <code>day06.py</code>：<code>POST /ingest</code>、<code>POST /ask</code>，起 <code>uvicorn</code> 用 curl / <code>httpx</code> 打 3 个问题</td>
+<td>动手</td>
+</tr>
+<tr>
+<td>2:15-2:30</td>
+<td>笔记区：记下 3 次请求的 <code>score</code> 与 <code>citations</code> 条数，以及文外问题的实际最高分</td>
+<td>记录</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">今日手撕打卡项</h2>
+<ul>
+<li>[ ] <strong>动手</strong>：新建 <code>learning/Daily/Day-06-NaiveRAG接口封装/day06.py</code>，用 <code>lifespan</code> 在启动时 <code>load</code>（无索引则 <code>build</code>）一次，暴露两个端点：</li>
+<li><code>POST /ingest</code> → <code>{"built": bool, "chunks": int, "seconds": float}</code>，<code>force=true</code> 时重建索引</li>
+<li><code>POST /ask</code> → <code>{"answer": str, "citations": [{"doc_id", "file", "score", "snippet"}], "hit": bool}</code>
+  起服务：<code>uvicorn day06:app --port 8000</code>，浏览器打开 <code>http://127.0.0.1:8000/docs</code> 能看到两个端点并能直接 Try it out。</li>
+<li>[ ] <strong>动手</strong>：把 Day 5 的三处硬伤补掉，并让引用能自证：</li>
+<li><code>chunks[i]</code> 遇 FAISS 返回 <code>-1</code>（索引条目少于 top_k 时）会 <code>IndexError</code> → 先过滤 <code>i &lt; 0 or i &gt;= len(chunks)</code> 再取</li>
+<li>索引无新鲜度校验 → 把 <code>chunk_size</code>/<code>chunk_overlap</code>/源文件 mtime 写进 <code>meta.json</code>，启动时对不上就重建（别再用「文件存在就复用」）</li>
+<li>建库参数三套不一致（Day 3 用 256/30、Day 4 用 512/128、Day 5 用 256/16）→ 今天定一个，写进 <code>meta.json</code>，以后所有实验都用它</li>
+<li><code>snippet</code> 取命中块前 80 字，<code>score</code> 原样返回——引用不再靠模型自己标 <code>[Doc n]</code>，而是<strong>响应里带真凭据</strong></li>
+</ul>
+<p>自测三条（写在笔记区，别只在终端刷过去）：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://127.0.0.1:8000/ask<span class="w"> </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"message":"Claude Code 的记忆是怎么分层实现的"}'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>json.tool
+</span></code></pre></div>
+<ol>
+<li>原文可直答的问题 → <code>hit=true</code>，<code>citations</code> 有分数、<code>snippet</code> 与答案对得上</li>
+<li>换说法问同一件事 → 命中的 <code>file</code> 与第 1 条大体一致（换个问法不该换到另一篇）</li>
+<li>文中没有的问题（例：这套系统部署要多大 Docker 镜像）→ <code>hit=false</code>，<code>answer</code> 为「资料中未提及」，<code>citations</code> 为空</li>
+</ol>
+<p>阈值建议 <code>HIT_THRESHOLD = 0.35</code>（bge-small-zh + 归一化内积的经验值），<strong>必须把你实测的最高分记下来</strong>——低于它就是没命中，这个数 Day 10-11 做 RAGAs 时会再校准。</p>
+<h2 id="_3">验收标准</h2>
+<p><code>uvicorn</code> 起服务后，三个 <code>curl</code> 全部返回 200 且 <code>/ask</code> 响应同时含 <code>answer</code> 与带分数、带 snippet 的 <code>citations</code>；文外问题返回 <code>hit=false</code> + 「资料中未提及」+ 空 <code>citations</code>；<code>/docs</code> 页面上两个端点可直接 Try it out。</p>
+<h2 id="day-5-2026-10-28">昨日回顾（Day 5 · 2026-10-28）</h2>
+<p>Day 5 已于 11-01 验收通过：153 块建索引、3 问带 <code>[Doc n]</code> 引用、文外问题正确兜底，<code>build</code>/<code>load</code>/<code>retrieve</code>/<code>answer</code> 四层已分开——这正是今天能只包一层的原因。</p>
+<p>留给今天的 5 条遗留，只补 3 条（另 2 条今天不碰）：</p>
+<table>
+<thead>
+<tr>
+<th>遗留</th>
+<th>今天处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不打印命中块与分数，引用无法自证</td>
+<td>补 → 走 <code>citations</code> 返回</td>
+</tr>
+<tr>
+<td>建库参数三套不一致</td>
+<td>补 → 定一套写 <code>meta.json</code></td>
+</tr>
+<tr>
+<td>索引无新鲜度校验</td>
+<td>补 → <code>meta.json</code> 比对，不匹配就重建</td>
+</tr>
+<tr>
+<td><code>chunks[i]</code> 未处理 FAISS 的 <code>-1</code></td>
+<td>补 → 越界过滤</td>
+</tr>
+<tr>
+<td>query 缺 bge 指令前缀</td>
+<td><strong>已修，不再动</strong>（<code>day05.py</code> 第 56 行已有「为这个句子生成表示…」）</td>
+</tr>
+</tbody>
+</table>
+<p>15 分钟补做方案（如果昨天的验收细节记不清）：只跑 <code>day05.py</code> 的三问，把每问 top-1 的 <code>score</code> 与 <code>file</code> 抄进笔记区，然后直接进今天的 <code>/ask</code>——同一个分数口径，Day 7 换 Docker 后才有对照。</p>
+<h2 id="_4">进度提示</h2>
+<ul>
+<li><strong>距 Day 7（周度总结 + Docker 部署）只剩 1 个学习日，就是明天 11-04 周三。</strong>今天必须攒下两样东西：① 一条<strong>能起服务</strong>的命令（<code>uvicorn day06:app --host 0.0.0.0 --port 8000</code>）② 一份完整依赖清单（<code>uv pip freeze</code> 输出，Dockerfile 的 <code>requirements.txt</code> 直接从这儿抄）。Day 7 只有一天，没这两样就做不出镜像。</li>
+<li>距 Day 14（混合检索 + Reranker + Milvus）还剩 8 个学习日（11-23），需要提前攒「同一批 query 在纯向量检索下的 top-3 基线」——今天这三条自测记录就是基线第一版，别丢。</li>
+<li>距 Day 21（研究助手 Agent）还剩 15 个学习日（12-08），暂无动作。</li>
+<li>节奏说明：本周一（11-02）那次自动下发没触发，所以本周只发 2 个学习日（今天 Day 6、明天 Day 7）。进度表里的里程碑日期已按实际下发重算。</li>
+</ul>
+<hr />
+<h2 id="2026-11-03-2230">验收结果（2026-11-03 22:30 实测 · 基本达成，未通过）</h2>
+<p>实跑 <code>uvicorn day06:app --port 8011</code> 逐项打点：</p>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>服务启动 / <code>/docs</code></td>
+<td>✅ 200</td>
+</tr>
+<tr>
+<td><code>/ask</code> 可直答</td>
+<td>✅ 200，top-3 = 0.713 / 0.678 / 0.678</td>
+</tr>
+<tr>
+<td><code>/ask</code> 换说法</td>
+<td>✅ 200，top-3 = 0.734 / 0.707 / 0.702，命中块 7/1/3 与第一问重叠</td>
+</tr>
+<tr>
+<td><code>/ask</code> 文外问题</td>
+<td>✅ <code>hit=false</code>、<code>citations=[]</code>、答「资料中未提及」</td>
+</tr>
+<tr>
+<td>分数分离度</td>
+<td>✅ 域内 0.678-0.734 vs 域外 0.202-0.282，<code>hit_thresh=0.5</code> 落在宽间隙中，定得对</td>
+</tr>
+<tr>
+<td><code>def</code> 非 <code>async def</code></td>
+<td>✅ encode 阻塞走线程池，未卡事件循环（今日"待补知识"自答了）</td>
+</tr>
+<tr>
+<td>FAISS <code>-1</code> 越界</td>
+<td>✅ 已 <code>continue</code> 跳过</td>
+</tr>
+<tr>
+<td><strong><code>/ingest</code> 默认路径</strong></td>
+<td>❌ <strong>HTTP 500</strong></td>
+</tr>
+<tr>
+<td><strong><code>force=true</code> 建索引</strong></td>
+<td>⚠️ 200 但产出 <strong>2323 块、平均 14 字</strong></td>
+</tr>
+<tr>
+<td><strong><code>meta.json</code> 新鲜度</strong></td>
+<td>❌ 未做</td>
+</tr>
+</tbody>
+</table>
+<h3 id="20">20 分钟补做清单</h3>
+<ol>
+<li><code>/ingest</code> 的 <code>chunks</code> 只在 <code>force</code> 分支赋值，<code>return</code> 里 <code>len(chunks)</code> 在 else 分支必炸 → 统一从 <code>request.app.state</code> 取：</li>
+</ol>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">chunks</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">return</span> <span class="p">{</span><span class="s2">"built"</span><span class="p">:</span> <span class="n">force</span><span class="p">,</span> <span class="s2">"chunks"</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span> <span class="s2">"seconds"</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li><code>force=true</code> 的 64/32 是第四套参数，且 64 token 切出 2323 个 14 字碎片 → 提到模块级 <code>CHUNK_SIZE, CHUNK_OVERLAP = 512, 128</code>，lifespan 与 /ingest 共用。</li>
+<li><code>meta.json</code> 写 <code>{"chunk_size", "overlap", "files": {name: mtime}, "n_chunks"}</code>，lifespan 与 /ingest 加载前比对，不一致就重建（现在是「文件在就复用」，会把坏索引当好的）。</li>
+<li><code>citations[0].score</code> 前加 <code>if not citations: hit=False</code>，否则 <code>top_k=0</code> 就 500。</li>
+<li><code>hit=false</code> 时保留 <code>citations</code>（只 <code>hit=false</code>），否则拿不到文外问题的真实最高分，阈值没法校准。</li>
+</ol>
+<hr />
+<h2 id="_5">笔记区</h2>
+<h3 id="_6">今日卡点</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="_7">关键代码片段</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># lifespan 里加载一次索引</span>
+</span></code></pre></div>
+<h3 id="_8">待补知识</h3>
+<h2 id="-fastapi-def-vs-async-defencode-cpu-def-async-def">- FastAPI <code>def</code> vs <code>async def</code>：<code>encode()</code> 是 CPU 阻塞，放 <code>def</code> 走线程池，放 <code>async def</code> 会卡住事件循环 —— 待实测确认</h2>
+<h3 id="_9">自测记录</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>hit</th>
+<th>top-1 score</th>
+<th>citations 条数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

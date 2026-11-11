@@ -1,0 +1,1510 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="60天 AI Agent 与 Advanced RAG 工程落地指南">
+      
+      
+        <meta name="author" content="AgentGuide">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>AI Agent 算法工程师 · 周末版学习计划（20 个周末） - AI Agent 开发工程实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ai-agent-20" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AI Agent 开发工程实战" class="md-header__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Agent 开发工程实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AI Agent 算法工程师 · 周末版学习计划（20 个周末）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至暗色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至暗色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页导读
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../learning-roadmap/" class="md-tabs__link">
+          
+  
+  
+  学习进度与路线
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-tabs__link">
+          
+  
+  
+  每日学习任务卡
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AI Agent 开发工程实战" class="md-nav__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Agent 开发工程实战
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页导读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习进度与路线
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    学习进度与路线
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    60天路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打卡进度追踪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../automation-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自动化陪练规范
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    每日学习任务卡
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    每日学习任务卡
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 01 - FastAPI 快速入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-02-LangChain%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 02 - LangChain 核心概念
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-03-RAG%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%88%86%E5%89%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 03 - RAG 加载与分割
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-04-RAG%E5%90%91%E9%87%8F%E5%8C%96%E4%B8%8E%E5%AD%98%E5%82%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 04 - RAG 向量化与存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-05-%E6%89%8B%E6%92%95NaiveRAG%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 05 - 手撕 Naive RAG 系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-06-NaiveRAG%E6%8E%A5%E5%8F%A3%E5%B0%81%E8%A3%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 06 - Naive RAG 接口封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-07-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EDocker%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 07 - 周度总结与 Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-08-QueryTransformation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 08 - Query Transformation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-09-HybridSearch-Rerank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 09 - 混合检索与 Rerank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-cards/Day-10-RAG%E8%AF%84%E4%BC%B0%E4%BD%93%E7%B3%BB/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 10 - RAG 评估体系与 Ragas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        编排原则
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        周末总览
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分周末详情
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="分周末详情">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#w01-d1-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W01 · D1-3 · 环境与手撕第一课
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w02-d4-7-transformer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W02 · D4-7 · Transformer 全解剖
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w03-d8-10-agent-react" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W03 · D8-10 · Agent 与 ReAct
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w04-d11-14-react" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W04 · D11-14 · ReAct 反思与复盘
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w05-d15-17-reflexion-tot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W05 · D15-17 · Reflexion 与 ToT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w06-d18-21-tot-multi-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W06 · D18-21 · ToT 实战与 Multi-Agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w07-d22-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W07 · D22-24 · 检索基础三件套
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w08-d25-28-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W08 · D25-28 · 前沿 RAG 与评估
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w09-d29-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W09 · D29-31 · 记忆机制入门
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w10-d32-35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W10 · D32-35 · 上下文工程
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w11-d36-38-rl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W11 · D36-38 · RL 与偏好对齐基础
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w12-d39-42-grpo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W12 · D39-42 · 对齐实战与 GRPO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w13-d43-46" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W13 · D43-46 · 项目启动
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w14-d47-49-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W14 · D47-49 · 实验框架与 Baseline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w15-d50-52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W15 · D50-52 · 核心模块起步
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w16-d53-55" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W16 · D53-55 · 算法实现完成
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w17-d56-58" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W17 · D56-58 · 实验与消融
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w18-d59-61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W18 · D59-61 · 论文写作
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w19-d62-64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W19 · D62-64 · 开源与求职材料
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#w20-d65" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        W20 · D65 + 总复盘 · 面试冲刺
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用说明
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="使用说明">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        漏推送怎么补
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        手动触发会怎样
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="ai-agent-20">AI Agent 算法工程师 · 周末版学习计划（20 个周末）</h1>
+<blockquote>
+<p><strong>来源文档</strong>：https://github.com/adongwanai/AgentGuide/blob/main/docs/05-roadmaps/learning-roadmap-algorithm.md
+<strong>原计划</strong>：9 周 / 65 天（全职每日制）
+<strong>本计划</strong>：压缩为每周末一次、每次约 3 天内容（2-4 天弹性），共 20 个周末，约 5 个月
+<strong>节奏</strong>：每周六 09:00 推送学习单，周六 + 周日两个学习日完成</p>
+</blockquote>
+<h2 id="_1">编排原则</h2>
+<ol>
+<li><strong>3 天为基准，内容边界优先</strong>：不把同一篇论文的精读拆到两个周末，也不把「理论 + 手撕」切开；因此实际区间在 2-4 天之间浮动。</li>
+<li><strong>每个周末必须有硬产出</strong>：可运行的代码、流程图、伪代码推导或笔记中的一种，不接受「只看视频」。</li>
+<li><strong>复盘周末不单独占位</strong>：原文档的预留/复盘日并入同主题周末的第二学习日。</li>
+<li><strong>项目期（D43-D65）按里程碑切</strong>：编码类周末只要求跑通一个明确里程碑，不追求进度数字。</li>
+</ol>
+<h2 id="_2">周末总览</h2>
+<table>
+<thead>
+<tr>
+<th>周末</th>
+<th>原文档天数</th>
+<th>主题</th>
+<th>阶段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W01</td>
+<td>D1-3</td>
+<td>Python/PyTorch 基础 + 手撕神经网络</td>
+<td>一、基础</td>
+</tr>
+<tr>
+<td>W02</td>
+<td>D4-7</td>
+<td>Transformer 架构全解剖 + 手撕 Multi-Head Attention</td>
+<td>一、基础</td>
+</tr>
+<tr>
+<td>W03</td>
+<td>D8-10</td>
+<td>Agent 核心概念 + ReAct 精读与复现</td>
+<td>二、Agent 理论</td>
+</tr>
+<tr>
+<td>W04</td>
+<td>D11-14</td>
+<td>ReAct 算法反思 + 周度复盘</td>
+<td>二、Agent 理论</td>
+</tr>
+<tr>
+<td>W05</td>
+<td>D15-17</td>
+<td>Reflexion 精读 + ToT 精读</td>
+<td>三、高级架构</td>
+</tr>
+<tr>
+<td>W06</td>
+<td>D18-21</td>
+<td>ToT 实战（24 点）+ Multi-Agent 协作</td>
+<td>三、高级架构</td>
+</tr>
+<tr>
+<td>W07</td>
+<td>D22-24</td>
+<td>BM25 + DPR + Reranker/混合检索</td>
+<td>四、RAG</td>
+</tr>
+<tr>
+<td>W08</td>
+<td>D25-28</td>
+<td>GraphRAG + Agentic RAG + RAG 评估</td>
+<td>四、RAG</td>
+</tr>
+<tr>
+<td>W09</td>
+<td>D29-31</td>
+<td>Agent Memory 概述 + Generative Agents</td>
+<td>五、记忆</td>
+</tr>
+<tr>
+<td>W10</td>
+<td>D32-35</td>
+<td>记忆压缩/上下文工程 + 分层记忆设计</td>
+<td>五、记忆</td>
+</tr>
+<tr>
+<td>W11</td>
+<td>D36-38</td>
+<td>RL 基础 + PPO + DPO 推导</td>
+<td>六、RL 对齐</td>
+</tr>
+<tr>
+<td>W12</td>
+<td>D39-42</td>
+<td>DPO 实战 + GRPO + RL for Tool + 奖励模型</td>
+<td>六、RL 对齐</td>
+</tr>
+<tr>
+<td>W13</td>
+<td>D43-46</td>
+<td>项目选题 + 文献调研 + 实验方案设计</td>
+<td>七、项目</td>
+</tr>
+<tr>
+<td>W14</td>
+<td>D47-49</td>
+<td>实验框架 + Baseline 实现</td>
+<td>七、项目</td>
+</tr>
+<tr>
+<td>W15</td>
+<td>D50-52</td>
+<td>Baseline 跑通 + 核心算法模块起步</td>
+<td>七、项目</td>
+</tr>
+<tr>
+<td>W16</td>
+<td>D53-55</td>
+<td>核心创新算法实现完成</td>
+<td>七、项目</td>
+</tr>
+<tr>
+<td>W17</td>
+<td>D56-58</td>
+<td>全量实验 + 消融 + 结果可视化</td>
+<td>七、项目</td>
+</tr>
+<tr>
+<td>W18</td>
+<td>D59-61</td>
+<td>论文 Method/Exp + Intro/Conclusion</td>
+<td>七、项目</td>
+</tr>
+<tr>
+<td>W19</td>
+<td>D62-64</td>
+<td>开源与博客 + 简历打磨 + 项目逐字稿</td>
+<td>八、冲刺</td>
+</tr>
+<tr>
+<td>W20</td>
+<td>D65 + 全链路复盘</td>
+<td>模拟面试 + 65 天总复盘</td>
+<td>八、冲刺</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_3">分周末详情</h2>
+<h3 id="w01-d1-3">W01 · D1-3 · 环境与手撕第一课</h3>
+<ul>
+<li><strong>内容</strong>：Python 核心语法、NumPy/Pandas；神经网络前向/反向传播、损失函数；PyTorch Tensor、自动求导、训练循环；从零实现前馈网络</li>
+<li><strong>必读/必看</strong>：《动手学深度学习》前 3 章、3Blue1Brown 线性代数精髓、Karpathy <em>Neural Networks: Zero to Hero</em> 第 1-2 集</li>
+<li><strong>硬产出</strong>：一份纯 NumPy 实现的两层 MLP（手写 forward + backward，不用 autograd），在 MNIST 子集上训练到 &gt;90% 准确率</li>
+<li><strong>验收</strong>：能口述梯度推导中每个矩阵的维度变化</li>
+</ul>
+<h3 id="w02-d4-7-transformer">W02 · D4-7 · Transformer 全解剖</h3>
+<ul>
+<li><strong>内容</strong>：Encoder/Decoder 结构、Self-Attention、Multi-Head Attention；Positional Encoding、LayerNorm、残差、FFN；MoE（专家网络、门控、Top-K）初探；用 Excel 复算一次注意力矩阵</li>
+<li><strong>必读</strong>：<em>Attention Is All You Need</em></li>
+<li><strong>硬产出</strong>：手撕 Multi-Head Attention（含 mask 分支），并与 <code>nn.MultiheadAttention</code> 数值对齐（误差 &lt; 1e-5）；Excel 里复现 4×4 注意力权重</li>
+<li><strong>验收</strong>：能解释 Bert/T5/GPT 三者架构差异，以及为什么 Decoder 需要 causal mask</li>
+</ul>
+<h3 id="w03-d8-10-agent-react">W03 · D8-10 · Agent 与 ReAct</h3>
+<ul>
+<li><strong>内容</strong>：什么是 Agent；Planning/Memory/Tool Use 三组件；Agent vs LLM vs RAG 的本质区别；ReAct 的 Thought-Action-Observation 循环</li>
+<li><strong>必读</strong>：ReAct（arXiv 2210.03629）、LLM Powered Autonomous Agents</li>
+<li><strong>硬产出</strong>：手绘 ReAct 算法流程图 + 基于 LangChain（或 Qwen-Agent）跑通一个带 2 个工具的 ReAct Agent</li>
+<li><strong>验收</strong>：能回答「ReAct 与 CoT 的本质区别」</li>
+</ul>
+<h3 id="w04-d11-14-react">W04 · D11-14 · ReAct 反思与复盘</h3>
+<ul>
+<li><strong>内容</strong>：ReAct 的失败模式（循环、工具误用、幻觉动作）；对比 Lagent/Qwen-Agent 实现差异；第 1-4 周知识复盘</li>
+<li><strong>硬产出</strong>：一篇 800 字以内的 ReAct 局限性分析（含至少 2 个你自己复现出的失败案例）；第 1 周 MLP 与第 2 周 MHA 代码合并成一个可复用模块</li>
+<li><strong>验收</strong>：能说出 3 种改进 ReAct 的思路及各自的代价</li>
+</ul>
+<h3 id="w05-d15-17-reflexion-tot">W05 · D15-17 · Reflexion 与 ToT</h3>
+<ul>
+<li><strong>内容</strong>：Reflexion 的 Actor→Evaluator→Self-Reflection 流程；ToT 把 LLM 当启发式函数的搜索框架；Self-Consistency</li>
+<li><strong>必读</strong>：Reflexion（2303.11366）、Tree of Thoughts（2305.10601）、Self-Refine</li>
+<li><strong>硬产出</strong>：Reflexion 伪代码实现（含记忆缓冲区）+ 手绘 ToT 搜索树示意</li>
+<li><strong>验收</strong>：能讲清 Reflexion 与 RL 中 credit assignment 的对应关系</li>
+</ul>
+<h3 id="w06-d18-21-tot-multi-agent">W06 · D18-21 · ToT 实战与 Multi-Agent</h3>
+<ul>
+<li><strong>内容</strong>：用 ToT 解 24 点游戏；MetaGPT 的 SOP 角色定义、Communicative Agents、AutoGen 对话式多智能体</li>
+<li><strong>硬产出</strong>：可运行的 ToT 24 点求解器（带剪枝和自评函数）；AutoGen 版 coder+critic 双 Agent 协作 demo</li>
+<li><strong>验收</strong>：对比 ReAct / Reflexion / ToT 三者的搜索空间与成本</li>
+</ul>
+<h3 id="w07-d22-24">W07 · D22-24 · 检索基础三件套</h3>
+<ul>
+<li><strong>内容</strong>：TF-IDF 与 BM25 原理；DPR 双编码器；ColBERT 延迟交互；Reranker 与 Hybrid Search</li>
+<li><strong>必读</strong>：DPR（2004.04906）、TF-IDF、ColBERT</li>
+<li><strong>硬产出</strong>：纯 Python 手写 BM25（不用现成库）+ FAISS 向量索引 + BM25&amp;Embedding 混合检索管线</li>
+<li><strong>验收</strong>：能在小语料上给出三种检索方式的 Recall@K 对比表</li>
+</ul>
+<h3 id="w08-d25-28-rag">W08 · D25-28 · 前沿 RAG 与评估</h3>
+<ul>
+<li><strong>内容</strong>：GraphRAG 的子图采样与路径排序；Agentic RAG 与多跳推理；Self-RAG 的自主检索决策；RAGAs 评估</li>
+<li><strong>必读</strong>：GraphRAG 技术报告、Self-RAG（2310.11511）、Modular RAG</li>
+<li><strong>硬产出</strong>：用 RAGAs 对第 7 周的 RAG 打分（faithfulness/answer relevancy/context recall 三项）+ Agentic RAG 查询规划模块伪代码</li>
+<li><strong>验收</strong>：能说明 GraphRAG 相对于向量 RAG 的收益边界</li>
+</ul>
+<h3 id="w09-d29-31">W09 · D29-31 · 记忆机制入门</h3>
+<ul>
+<li><strong>内容</strong>：短期 vs 长期记忆；记忆分类与挑战；Generative Agents 的 Recency/Importance/Relevance 评分与检索</li>
+<li><strong>必读</strong>：Generative Agents（2304.03442）、Agent Memory 综述</li>
+<li><strong>硬产出</strong>：实现一个三维加权的记忆检索函数（含时间衰减），并用构造数据验证排序合理性</li>
+<li><strong>验收</strong>：能解释为什么单纯的向量相似度检索在长期对话中会失效</li>
+</ul>
+<h3 id="w10-d32-35">W10 · D32-35 · 上下文工程</h3>
+<ul>
+<li><strong>内容</strong>：记忆压缩与总结（聚类+摘要+去重）；上下文选择策略、层级笔记、QA 对转换；MemGPT 的虚拟上下文管理；分层记忆架构设计</li>
+<li><strong>必读</strong>：MemGPT（2310.08560）</li>
+<li><strong>硬产出</strong>：分层记忆（Event Memory + Working Memory）完整设计文档 + 可运行的检索 demo；自定义一个 LlamaIndex NodePostprocessor</li>
+<li><strong>验收</strong>：给出压缩率与信息保留率的实测数字</li>
+</ul>
+<h3 id="w11-d36-38-rl">W11 · D36-38 · RL 与偏好对齐基础</h3>
+<ul>
+<li><strong>内容</strong>：MDP、Policy、Value Function、Policy Gradient；PPO 目标函数与裁剪；DPO 如何从偏好数据隐式学奖励</li>
+<li><strong>必读</strong>：PPO、DPO（2305.18290）</li>
+<li><strong>硬产出</strong>：<strong>手推 DPO 损失函数</strong>（从 Bradley-Terry 模型出发，拍照上传推导过程）；PPO clip 机制的数值小实验</li>
+<li><strong>验收</strong>：能解释 DPO 为什么不需要 reward model，以及它的隐含假设</li>
+</ul>
+<h3 id="w12-d39-42-grpo">W12 · D39-42 · 对齐实战与 GRPO</h3>
+<ul>
+<li><strong>内容</strong>：TRL DPOTrainer 跑通一次 DPO；GRPO 的组内相对偏好；Toolformer 与 RL for Tool Learning；奖励模型训练</li>
+<li><strong>必读</strong>：GRPO（2402.03300）、DeepSeek-R1、Toolformer</li>
+<li><strong>硬产出</strong>：一次完整 DPO 训练（小模型 + 小数据集，记录 loss 曲线与前后对比样本）+ 一个 Agent 工具调用任务的奖励函数设计</li>
+<li><strong>验收</strong>：能比较 PPO/DPO/GRPO 在 Agent 场景的取舍</li>
+</ul>
+<h3 id="w13-d43-46">W13 · D43-46 · 项目启动</h3>
+<ul>
+<li><strong>内容</strong>：在「Agentic RAG with Self-Correction」与「Hierarchical Memory Agent」中选定一个；精读 5-7 篇核心论文；画算法流程图；确定数据集、Baseline、指标、消融方案</li>
+<li><strong>硬产出</strong>：项目 README（问题定义/创新点/实验设计）+ Related Work 初稿 + 算法流程图</li>
+<li><strong>验收</strong>：能用一段话讲清「我的方法比 baseline 好在哪，用什么指标证明」</li>
+</ul>
+<h3 id="w14-d47-49-baseline">W14 · D47-49 · 实验框架与 Baseline</h3>
+<ul>
+<li><strong>内容</strong>：数据加载与预处理、评估脚本、日志与实验管理；实现 Naive RAG / ReAct / Sliding Window 等 Baseline</li>
+<li><strong>硬产出</strong>：可一键跑通的 experiment 入口脚本 + Baseline 指标基线数字</li>
+<li><strong>验收</strong>：换机器/换随机种子能复现同一结果</li>
+</ul>
+<h3 id="w15-d50-52">W15 · D50-52 · 核心模块起步</h3>
+<ul>
+<li><strong>内容</strong>：实现创新算法的第一个核心模块（Self-Correction 判定器 或 Hierarchical Memory 写入/检索）</li>
+<li><strong>硬产出</strong>：核心模块单测 + 小规模端到端跑通</li>
+<li><strong>验收</strong>：模块可独立开关（为后续消融实验留好接口）</li>
+</ul>
+<h3 id="w16-d53-55">W16 · D53-55 · 算法实现完成</h3>
+<ul>
+<li><strong>内容</strong>：补齐第二个创新模块（Iterative Retrieval 或 Autonomous Summarization），打通完整 pipeline</li>
+<li><strong>硬产出</strong>：完整方法可跑，主表指标首次出数</li>
+<li><strong>验收</strong>：相对 Baseline 已有非平凡差异（不论正负），能解释原因</li>
+</ul>
+<h3 id="w17-d56-58">W17 · D56-58 · 实验与消融</h3>
+<ul>
+<li><strong>内容</strong>：全量实验、消融实验、多组随机种子、效率指标（查询次数、检索延迟、压缩率）；图表可视化</li>
+<li><strong>硬产出</strong>：主实验结果表 + 消融表 + 3 张核心图（含误差棒）</li>
+<li><strong>验收</strong>：每个创新模块的贡献有单独可量化的证据</li>
+</ul>
+<h3 id="w18-d59-61">W18 · D59-61 · 论文写作</h3>
+<ul>
+<li><strong>内容</strong>：Method 与 Experiments 章节撰写；Introduction、Abstract、Conclusion；Overleaf ACL 模板排版</li>
+<li><strong>硬产出</strong>：论文初稿（Method + Exp + Intro + Conclusion 齐全，图表就位）</li>
+<li><strong>验收</strong>：Method 部分能让同行不看代码复现出算法</li>
+</ul>
+<h3 id="w19-d62-64">W19 · D62-64 · 开源与求职材料</h3>
+<ul>
+<li><strong>内容</strong>：代码整理与注释、README 与技术博客；按 STAR-算法版重写简历项目经历；3-5 分钟项目介绍逐字稿</li>
+<li><strong>硬产出</strong>：GitHub 仓库（README + 示例）+ 技术博客一篇 + 简历项目段 + 逐字稿</li>
+<li><strong>验收</strong>：README 能让陌生人在 10 分钟内跑起来</li>
+</ul>
+<h3 id="w20-d65">W20 · D65 + 总复盘 · 面试冲刺</h3>
+<ul>
+<li><strong>内容</strong>：模拟项目深挖（「为什么不用 XX 方法」「算法局限在哪」）；65 天全链路知识地图复盘；补齐短板</li>
+<li><strong>硬产出</strong>：一份自问自答题库（≥30 题）+ 一张覆盖 9 周的知识地图</li>
+<li><strong>验收</strong>：能连续 20 分钟被追问而不掉线</li>
+</ul>
+<hr />
+<h2 id="_4">使用说明</h2>
+<ul>
+<li>进度记录在 <code>learning/progress.md</code>，每次推送后自动 +1。</li>
+<li>学习单文件命名：<code>learning/weekend-W##-学习单.md</code>。</li>
+<li>若某个周末没完成，直接在下次推送时告诉助手「W## 未完成」，助手会把内容并入当周学习单（不跳过）。</li>
+</ul>
+<h3 id="_5">漏推送怎么补</h3>
+<p>定时任务是<strong>本地执行</strong>：周六 09:00 电脑关机、客户端未运行、系统休眠或断网，这次触发就直接错过，不会自动补跑。
+因为学哪个周末由 <code>progress.md</code> 的指针决定、不按日期推算，所以手动补跑不会错位：</p>
+<blockquote>
+<p>周日（或其他任意时间）打开电脑后，在对话里说一句 <strong>「补跑本周末」</strong> 即可。</p>
+</blockquote>
+<p>助手会读 <code>progress.md</code> 取当前指针，生成同一份 W## 学习单，并把指针 +1。连续漏两周就说「补跑本周末，上周也没做」，会把两周内容合并（总量可到 4-5 天）。</p>
+<h3 id="_6">手动触发会怎样</h3>
+<ul>
+<li><strong>手动触发不会取消定时</strong>：立即运行一次后，定时规则照旧，本周六 09:00 仍会再跑一次。</li>
+<li><strong>手动触发会消耗进度</strong>：每次正常运行都会让指针 +1，所以提前手动跑一次 = 该周末被提前发掉，到周六就变成下一个 W##，整体进度前移一周。</li>
+<li><strong>只想看格式</strong>：说「试跑」或「不要推进进度」，只在对话里输出学习单，不写文件、不动指针。</li>
+<li><strong>同周重复触发</strong>：若该编号学习单已存在且本周已推送过，只提示「已推送」，不重复生成、不推进指针；要重做请说「重做 W##」。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
