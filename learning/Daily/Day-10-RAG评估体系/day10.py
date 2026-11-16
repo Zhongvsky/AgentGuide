@@ -33,14 +33,18 @@ if hasattr(sys.stderr, "reconfigure"):
     except Exception:
         pass
 
-# 镜像加速与依赖库
-os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+from dotenv import load_dotenv, find_dotenv
+
+# 优先加载 .env 环境变量（包括 HF_ENDPOINT、OPENAI_*、LLM_* 等）
+load_dotenv(find_dotenv())
+
+# 若 .env 中未显式配置 HF_ENDPOINT，兜底使用国内镜像加速
+os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
 
 from sentence_transformers import SentenceTransformer
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-
 
 # ==========================================
 # 1. 契约定义 (Data Models & Contracts)
@@ -51,16 +55,22 @@ class EvaluationSample(BaseModel):
     """单个评估样本输入契约"""
 
     query: str = Field(..., description="用户的原始提问")
-    retrieved_contexts: List[str] = Field(..., description="检索回来的参考上下文片段列表")
+    retrieved_contexts: List[str] = Field(
+        ..., description="检索回来的参考上下文片段列表"
+    )
     generated_answer: str = Field(..., description="RAG 系统生成的最终回答")
-    ground_truth: Optional[str] = Field(None, description="标准人工标注真值答案（可选）")
+    ground_truth: Optional[str] = Field(
+        None, description="标准人工标注真值答案（可选）"
+    )
 
 
 class StatementVerification(BaseModel):
     """单个原子命题的判定契约"""
 
     statement: str = Field(..., description="拆解出的原子陈述句")
-    verdict: int = Field(..., description="是否得到上下文支撑：1 为得到支撑，0 为无支撑/幻觉")
+    verdict: int = Field(
+        ..., description="是否得到上下文支撑：1 为得到支撑，0 为无支撑/幻觉"
+    )
     reason: str = Field(..., description="裁判模型的判决依据与理由")
 
 
@@ -70,8 +80,12 @@ class EvaluationReport(BaseModel):
     query: str
     faithfulness_score: float = Field(..., description="真实度得分 (0.0 ~ 1.0)")
     answer_relevance_score: float = Field(..., description="回答相关度得分 (0.0 ~ 1.0)")
-    statements: List[StatementVerification] = Field(default_factory=list, description="原子命题验证明细")
-    reverse_queries: List[str] = Field(default_factory=list, description="逆向反推生成的问题")
+    statements: List[StatementVerification] = Field(
+        default_factory=list, description="原子命题验证明细"
+    )
+    reverse_queries: List[str] = Field(
+        default_factory=list, description="逆向反推生成的问题"
+    )
 
 
 # ==========================================
@@ -79,23 +93,33 @@ class EvaluationReport(BaseModel):
 # ==========================================
 
 
-def get_judge_llm(base_url: str = "http://127.0.0.1:9527/v1", api_key: str = "dummy") -> Any:
-    """初始化用于打分的裁判大模型（兼容 OpenAI 协议本地端点）"""
+def get_judge_llm(
+    base_url: Optional[str] = None,
+    api_key: Optional[str] = None,
+    model: Optional[str] = None,
+) -> Any:
+    """初始化用于打分的裁判大模型（兼容 OpenAI 协议端点，优先读取 .env 环境变量）"""
+    actual_base_url = base_url or os.getenv(
+        "OPENAI_BASE_URL", "http://127.0.0.1:9527/v1"
+    )
+    actual_api_key = api_key or os.getenv("OPENAI_API_KEY", "dummy")
+    actual_model = model or os.getenv("LLM_MODEL_NAME", "Qwen/Qwen2.5-7B-Instruct")
+
     try:
         llm = ChatOpenAI(
-            base_url=base_url,
-            api_key=api_key,
-            model="Qwen/Qwen2.5-7B-Instruct",
+            base_url=actual_base_url,
+            api_key=actual_api_key,
+            model=actual_model,
             temperature=0.01,  # 裁判任务必须低温确定性
             max_retries=1,
-            timeout=15,
+            timeout=35,
         )
         # 简单心跳探测
         llm.invoke("Hi")
-        print("[+] 成功连接本地裁判大模型 (127.0.0.1:9527)！")
+        print(f"[+] 成功连接裁判大模型 ({actual_base_url} | 模型: {actual_model})！")
         return llm
     except Exception as e:
-        print(f"[-] 未能连接本地大模型端点 ({e})")
+        print(f"[-] 未能连接大模型端点 ({actual_base_url}): {e}")
         print("[*] 启用内置高拟真裁判模拟器 (MockJudgeLLM) 作为自适应离线环境...")
 
         class MockJudgeLLM:
@@ -103,36 +127,54 @@ def get_judge_llm(base_url: str = "http://127.0.0.1:9527/v1", api_key: str = "du
 
             def invoke(self, prompt_text: Any) -> Any:
                 text = str(prompt_text)
+
                 class MockMsg:
                     content = ""
+
                 msg = MockMsg()
 
                 # 分支 1：如果是拆解命题
                 if "原子陈述" in text or "statements" in text.lower():
                     # 模拟将回答按句号分句
                     ans_part = text.split("回答：")[-1].split("\n")[0]
-                    sentences = [s.strip() for s in ans_part.replace("。", "。\n").split("\n") if len(s.strip()) > 5]
-                    msg.content = json.dumps({"statements": sentences or ["出差人员按规定乘坐交通工具。"]}, ensure_ascii=False)
+                    sentences = [
+                        s.strip()
+                        for s in ans_part.replace("。", "。\n").split("\n")
+                        if len(s.strip()) > 5
+                    ]
+                    msg.content = json.dumps(
+                        {"statements": sentences or ["出差人员按规定乘坐交通工具。"]},
+                        ensure_ascii=False,
+                    )
                     return msg
 
                 # 分支 2：如果是验证支撑性
                 elif "忠实度" in text or "verdict" in text.lower():
                     # 简单的包含度逻辑模拟
                     if "特等座" in text or "800元" in text or "豪华" in text:
-                        msg.content = json.dumps([{"verdict": 0, "reason": "上下文无此金额或席位规定"}], ensure_ascii=False)
+                        msg.content = json.dumps(
+                            [{"verdict": 0, "reason": "上下文无此金额或席位规定"}],
+                            ensure_ascii=False,
+                        )
                     else:
-                        msg.content = json.dumps([{"verdict": 1, "reason": "上下文中有明确依据"}], ensure_ascii=False)
+                        msg.content = json.dumps(
+                            [{"verdict": 1, "reason": "上下文中有明确依据"}],
+                            ensure_ascii=False,
+                        )
                     return msg
 
                 # 分支 3：如果是逆向反推问题
                 elif "反推问题" in text or "reverse" in text.lower():
-                    msg.content = json.dumps({
-                        "questions": [
-                            "出差乘坐交通工具有什么等级规定？",
-                            "差旅费管理办法对于出行工具有哪些约束？",
-                            "哪些级别的干部可以坐一等座？"
-                        ]
-                    }, ensure_ascii=False)
+                    msg.content = json.dumps(
+                        {
+                            "questions": [
+                                "出差乘坐交通工具有什么等级规定？",
+                                "差旅费管理办法对于出行工具有哪些约束？",
+                                "哪些级别的干部可以坐一等座？",
+                            ]
+                        },
+                        ensure_ascii=False,
+                    )
                     return msg
 
                 msg.content = "1"
@@ -152,7 +194,7 @@ def extract_atomic_statements(answer: str, judge_llm: Any) -> List[str]:
 
     目标：
     将 RAG 系统生成的复杂长回答（answer）拆解为若干个语义独立、不可再分的「原子事实陈述句（Atomic Statements）」。
-    例如："出差人员可乘坐高铁，且司局级干部可坐一等座。" 
+    例如："出差人员可乘坐高铁，且司局级干部可坐一等座。"
     应拆解为：
     - "出差人员可乘坐高铁。"
     - "司局级干部可坐一等座。"
@@ -163,9 +205,15 @@ def extract_atomic_statements(answer: str, judge_llm: Any) -> List[str]:
     3. 调用 judge_llm，解析返回的 JSON，返回 List[str]。
     """
     # TODO 1: 请实现原子命题拆解逻辑
-    raise NotImplementedError(
-        "【关卡 1 待实现】：请实现 extract_atomic_statements 原子命题拆解！完成后删除本行。"
+    prompt = ChatPromptTemplate.from_template(
+        '对下面的内容提取事实陈述、剔除语气助词，输出严格的 JSON 格式: {question}，输出JSON格式为 {{"statements": ["陈述1", "陈述2", ...]}}'
     )
+
+    chain = prompt | judge_llm | StrOutputParser()
+
+    out = chain.invoke({"question": answer})
+
+    return json.loads(out)["statements"]
 
 
 def evaluate_faithfulness(
@@ -193,9 +241,44 @@ def evaluate_faithfulness(
     5. 返回 (score, verification_list)。
     """
     # TODO 2: 请实现 Faithfulness 忠实度验证算法
-    raise NotImplementedError(
-        "【关卡 2 待实现】：请实现 evaluate_faithfulness 真实度核验！完成后删除本行。"
+
+    text_context = ""
+    for context in contexts:
+        text_context += context.strip() + "\n"
+
+    prompt = ChatPromptTemplate.from_template(
+        "你是一位极其严格的评审专家，请针对下面一系列陈述内容，判断能否由下面的参考资料中推导出来：\n"
+        "## 陈述内容\n"
+        "{statements}\n"
+        "## 参考资料\n"
+        "{text_context}\n"
+        "## 要求\n"
+        "对于每一条陈述，要先说明理由，若其可以在参考资料中推导出来，则记该陈述的 verdict = 1，否则记该陈述的 verdict=0\n"
+        "最后输出为严格的JSON列表格式，如:"
+        '[{{"statement": "xxx", "reason": "xxx", "verdict": 0}}, {{"statement": "xxx", "reason": "xxx", "verdict": 1}}, ...]'
     )
+
+    chain = prompt | judge_llm | StrOutputParser()
+
+    out = chain.invoke({"statements": statements, "text_context": text_context})
+
+    supported_count = 0
+    verification_list = []
+    for res in json.loads(out):
+        v = int(res.get("verdict", 0))
+        if v == 1:
+            supported_count += 1
+        verification_list.append(
+            StatementVerification(
+                statement=res.get("statement", ""),
+                verdict=v,
+                reason=res.get("reason", ""),
+            )
+        )
+
+    faithfulness_score = supported_count / len(statements)
+
+    return (faithfulness_score, verification_list)
 
 
 def evaluate_answer_relevance(
@@ -226,9 +309,28 @@ def evaluate_answer_relevance(
     6. 返回 (relevance_score, reverse_queries)。
     """
     # TODO 3: 请实现基于逆向提问与余弦相似度的 Answer Relevancy 算法
-    raise NotImplementedError(
-        "【关卡 3 待实现】：请实现 evaluate_answer_relevance 回答相关度评估！完成后删除本行。"
+
+    prompt = ChatPromptTemplate.from_template(
+        "你是一位经验丰富的问题反推专家，以下面的内容为参考，反推出{num_reverse_questions}个可能的问题。\n"
+        '参考内容："{answer}"\n'
+        '要求：输出需严格保证JSON格式 {{"questions": ["反推问题1", "反推问题2", ...]}})'
     )
+    chain = prompt | judge_llm | StrOutputParser()
+
+    out = chain.invoke(
+        {"num_reverse_questions": num_reverse_questions, "answer": answer}
+    )
+
+    v_q = embed_model.encode(query, normalize_embeddings=True)
+    reverse_queries = json.loads(out)["questions"]
+
+    relevance_score = 0
+    for reverse_query in reverse_queries:
+        v_rq = embed_model.encode(reverse_query, normalize_embeddings=True)
+        relevance_score += float(np.dot(v_q, v_rq))
+    relevance_score /= len(reverse_queries)
+
+    return (relevance_score, reverse_queries)
 
 
 # ==========================================
@@ -280,8 +382,12 @@ def run_evaluation_pipeline(
         # 打印单样本得分卡
         print(f"\n  📊 【样本评估指标卡】 (耗时: {elapsed:.2f}s):")
         print(f"  ------------------------------------------------------------")
-        print(f"  1. 真实度 / 抗幻觉 (Faithfulness)  : {faith_score:.4f}  ({'🟢 极高' if faith_score > 0.8 else '🔴 存严重幻觉'})")
-        print(f"  2. 回答相关性 (Answer Relevance) : {relevance_score:.4f}  ({'🟢 高度契合' if relevance_score > 0.75 else '🟡 存在偏题'})")
+        print(
+            f"  1. 真实度 / 抗幻觉 (Faithfulness)  : {faith_score:.4f}  ({'🟢 极高' if faith_score > 0.8 else '🔴 存严重幻觉'})"
+        )
+        print(
+            f"  2. 回答相关性 (Answer Relevance) : {relevance_score:.4f}  ({'🟢 高度契合' if relevance_score > 0.75 else '🟡 存在偏题'})"
+        )
         print(f"  ------------------------------------------------------------")
         print(f"  [命题支撑判定明细]:")
         for v in verifications:

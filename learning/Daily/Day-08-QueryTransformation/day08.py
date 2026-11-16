@@ -313,7 +313,7 @@ def hyde_retrieve(
 # 规则：请务必先独立挑战上方 1~6 关卡，卡壳思考 20 分钟以上或全部写完后再展开对照！
 # =======================================================================
 # region 🙈 官方参考实现 (VS Code 点击左侧行号旁的下箭头可折叠/展开)
-"""
+r"""
 def _ref_build_multi_query_chain(llm):
     prompt = ChatPromptTemplate.from_messages([
         ("system", (
