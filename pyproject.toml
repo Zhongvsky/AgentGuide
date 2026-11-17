@@ -11,6 +11,8 @@ dependencies = [
     "langchain-openai>=1.7.2",
     "llama-index-core>=0.14.25",
     "llama-index-readers-file>=0.7.0",
+    "milvus-lite>=3.2.2",
+    "pymilvus>=3.0.3",
     "rank-bm25",
     "sentence-transformers>=6.2.0",
 ]

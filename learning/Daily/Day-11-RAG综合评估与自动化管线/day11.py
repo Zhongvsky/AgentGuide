@@ -20,6 +20,10 @@ import re
 from typing import List, Dict, Any, Tuple, Optional
 from pydantic import BaseModel, Field
 import numpy as np
+from dotenv import load_dotenv, find_dotenv
+
+# 加载 .env 环境变量（自动获取真实可用的大模型配置）
+load_dotenv(find_dotenv())
 
 # Windows 控制台 UTF-8 防御（避免 GBK 编码崩溃）
 if hasattr(sys.stdout, "reconfigure"):
@@ -40,7 +44,8 @@ from sentence_transformers import SentenceTransformer
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-
+from langchain_core.runnables import Runnable
+from langchain_core.messages import AIMessage
 
 # ==========================================
 # 1. 契约定义 (Data Models & Contracts)
@@ -51,7 +56,9 @@ class StatementVerification(BaseModel):
     """单个原子命题的判定契约"""
 
     statement: str = Field(..., description="拆解出的原子陈述句")
-    verdict: int = Field(..., description="是否得到上下文支撑：1 为得到支撑，0 为无支撑/幻觉")
+    verdict: int = Field(
+        ..., description="是否得到上下文支撑：1 为得到支撑，0 为无支撑/幻觉"
+    )
     reason: str = Field(..., description="裁判模型的判决依据与理由")
 
 
@@ -79,9 +86,15 @@ class QualityGateResult(BaseModel):
 
     passed: bool = Field(..., description="质量门禁是否通过")
     decision: str = Field(..., description="决策说明：PASS / BLOCK")
-    reasons: List[str] = Field(default_factory=list, description="通过或熔断的具体判定依据")
-    baseline_avg: Dict[str, float] = Field(default_factory=dict, description="基线系统平均指标")
-    candidate_avg: Dict[str, float] = Field(default_factory=dict, description="候选新系统平均指标")
+    reasons: List[str] = Field(
+        default_factory=list, description="通过或熔断的具体判定依据"
+    )
+    baseline_avg: Dict[str, float] = Field(
+        default_factory=dict, description="基线系统平均指标"
+    )
+    candidate_avg: Dict[str, float] = Field(
+        default_factory=dict, description="候选新系统平均指标"
+    )
 
 
 # ==========================================
@@ -95,7 +108,9 @@ def get_judge_llm(
     model: Optional[str] = None,
 ) -> Any:
     """初始化用于打分的裁判大模型（兼容 OpenAI 协议端点，优先读取 .env 环境变量）"""
-    actual_base_url = base_url or os.getenv("OPENAI_BASE_URL", "http://127.0.0.1:9527/v1")
+    actual_base_url = base_url or os.getenv(
+        "OPENAI_BASE_URL", "http://127.0.0.1:9527/v1"
+    )
     actual_api_key = api_key or os.getenv("OPENAI_API_KEY", "dummy")
     actual_model = model or os.getenv("LLM_MODEL_NAME", "Qwen/Qwen2.5-7B-Instruct")
 
@@ -114,51 +129,82 @@ def get_judge_llm(
     except Exception as e:
         print(f"[-] 未能连接大模型端点 ({e})，启用内置 Mock 裁判模拟器...")
 
-        class MockJudgeLLM:
-            def invoke(self, prompt_text: Any) -> Any:
+        class MockJudgeLLM(Runnable):
+            def invoke(self, prompt_text: Any, config: Any = None) -> Any:
                 text = str(prompt_text)
+
                 class Msg:
                     content = ""
+
                 m = Msg()
 
                 # 分支 1：Context Relevance 关键句筛选
-                if "上下文相关度" in text or "relevant_sentences" in text.lower():
+                if "上下文相关度" in text or "relevant_sentences" in text.lower() or "relevant_ids" in text.lower():
                     # 模拟挑出包含“一等座”、“二等座”、“等级”的句子
-                    m.content = json.dumps({
-                        "relevant_sentences": [
-                            "第七条 出差人员应当按规定等级乘坐交通工具。",
-                            "部级及相当职务人员可乘高铁商务座；司局级及相当职务人员可乘高铁一等座；其余人员可乘高铁二等座。"
-                        ]
-                    }, ensure_ascii=False)
+                    m.content = json.dumps(
+                        {
+                            "relevant_sentences": [
+                                "第七条 出差人员应当按规定等级乘坐交通工具。",
+                                "部级及相当职务人员可乘高铁商务座；司局级及相当职务人员可乘高铁一等座；其余人员可乘高铁二等座。",
+                            ],
+                            "relevant_ids": [0, 1],
+                            "relevants_ids": [0, 1],
+                        },
+                        ensure_ascii=False,
+                    )
                     return m
 
                 # 分支 2：原子命题拆解
                 elif "原子陈述" in text or "statements" in text.lower():
-                    m.content = json.dumps({
-                        "statements": [
-                            "普通员工出差不能购买高铁一等座。",
-                            "普通员工出差乘坐高铁只能购买二等座。"
-                        ]
-                    }, ensure_ascii=False)
+                    m.content = json.dumps(
+                        {
+                            "statements": [
+                                "普通员工出差不能购买高铁一等座。",
+                                "普通员工出差乘坐高铁只能购买二等座。",
+                            ]
+                        },
+                        ensure_ascii=False,
+                    )
                     return m
 
                 # 分支 3：Faithfulness 判定
                 elif "忠实度" in text or "verdict" in text.lower():
                     if "特等座" in text or "800元" in text or "无上限" in text:
-                        m.content = json.dumps([{"statement": "xxx", "verdict": 0, "reason": "无原文支撑"}], ensure_ascii=False)
+                        m.content = json.dumps(
+                            [
+                                {
+                                    "statement": "xxx",
+                                    "verdict": 0,
+                                    "reason": "无原文支撑",
+                                }
+                            ],
+                            ensure_ascii=False,
+                        )
                     else:
-                        m.content = json.dumps([{"statement": "xxx", "verdict": 1, "reason": "完全吻合第七条"}], ensure_ascii=False)
+                        m.content = json.dumps(
+                            [
+                                {
+                                    "statement": "xxx",
+                                    "verdict": 1,
+                                    "reason": "完全吻合第七条",
+                                }
+                            ],
+                            ensure_ascii=False,
+                        )
                     return m
 
                 # 分支 4：逆向提问
                 elif "反推问题" in text or "reverse" in text.lower():
-                    m.content = json.dumps({
-                        "questions": [
-                            "普通员工出差可以乘坐高铁一等座吗？",
-                            "差旅规定中各级别人员的高铁乘坐标准是什么？",
-                            "差旅费管理办法第七条有什么具体规定？"
-                        ]
-                    }, ensure_ascii=False)
+                    m.content = json.dumps(
+                        {
+                            "questions": [
+                                "普通员工出差可以乘坐高铁一等座吗？",
+                                "差旅规定中各级别人员的高铁乘坐标准是什么？",
+                                "差旅费管理办法第七条有什么具体规定？",
+                            ]
+                        },
+                        ensure_ascii=False,
+                    )
                     return m
 
                 m.content = "{}"
@@ -173,11 +219,17 @@ def extract_atomic_statements(answer: str, judge_llm: Any) -> List[str]:
     prompt = ChatPromptTemplate.from_template(
         "请将以下回答拆解为若干个语义独立、不可再分的「原子事实陈述句」，剔除修饰词与废话。\n"
         "回答内容：{answer}\n"
-        "请以严格的 JSON 输出：{{\"statements\": [\"陈述1\", \"陈述2\", ...]}}"
+        '请以严格的 JSON 输出：{{"statements": ["陈述1", "陈述2", ...]}}'
     )
     chain = prompt | judge_llm | StrOutputParser()
     out = chain.invoke({"answer": answer})
-    cleaned = out.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    cleaned = (
+        out.strip()
+        .removeprefix("```json")
+        .removeprefix("```")
+        .removesuffix("```")
+        .strip()
+    )
     try:
         return json.loads(cleaned).get("statements", [answer])
     except Exception:
@@ -196,15 +248,28 @@ def evaluate_faithfulness(
         "【参考资料】：\n{text_context}\n\n"
         "【待核验命题】：\n{statements}\n\n"
         "规则：先分析 reason，再给 verdict（1=充分支撑，0=无支撑/幻觉）。\n"
-        "严格以 JSON 列表输出：[{{\"statement\": \"...\", \"verdict\": 0或1, \"reason\": \"...\"}}]"
+        '严格以 JSON 列表输出：[{{"statement": "...", "verdict": 0或1, "reason": "..."}}]'
     )
     chain = prompt | judge_llm | StrOutputParser()
-    out = chain.invoke({"statements": json.dumps(statements, ensure_ascii=False), "text_context": text_context})
-    cleaned = out.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    out = chain.invoke(
+        {
+            "statements": json.dumps(statements, ensure_ascii=False),
+            "text_context": text_context,
+        }
+    )
+    cleaned = (
+        out.strip()
+        .removeprefix("```json")
+        .removeprefix("```")
+        .removesuffix("```")
+        .strip()
+    )
     try:
         raw_list = json.loads(cleaned)
     except Exception:
-        raw_list = [{"statement": s, "verdict": 1, "reason": "解析兜底"} for s in statements]
+        raw_list = [
+            {"statement": s, "verdict": 1, "reason": "解析兜底"} for s in statements
+        ]
 
     supported_count = 0
     verification_list = []
@@ -216,7 +281,7 @@ def evaluate_faithfulness(
             StatementVerification(
                 statement=res.get("statement", ""),
                 verdict=v,
-                reason=res.get("reason", "")
+                reason=res.get("reason", ""),
             )
         )
     score = supported_count / len(statements) if statements else 1.0
@@ -234,11 +299,17 @@ def evaluate_answer_relevance(
     prompt = ChatPromptTemplate.from_template(
         "你是一个问题反推专家。请仅根据以下【回答内容】，反推用户原本可能提出的 {num} 个提问：\n"
         "回答内容：{answer}\n"
-        "严格以 JSON 输出：{{\"questions\": [\"反推问题1\", \"反推问题2\", ...]}}"
+        '严格以 JSON 输出：{{"questions": ["反推问题1", "反推问题2", ...]}}'
     )
     chain = prompt | judge_llm | StrOutputParser()
     out = chain.invoke({"num": num_reverse_questions, "answer": answer})
-    cleaned = out.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    cleaned = (
+        out.strip()
+        .removeprefix("```json")
+        .removeprefix("```")
+        .removesuffix("```")
+        .strip()
+    )
     try:
         reverse_queries = json.loads(cleaned).get("questions", [query])
     except Exception:
@@ -276,9 +347,54 @@ def evaluate_context_relevance(
     5. 返回 (cr_score, relevant_sentences, all_sentences)。
     """
     # TODO 1: 请实现基于句子拆解与关键句提取的 Context Relevance 算法
-    raise NotImplementedError(
-        "【关卡 1 待实现】：请实现 evaluate_context_relevance 上下文相关度计算！完成后删除本行。"
+
+    def split_sentences(text: str) -> list[str]:
+        # 1. 核心标点断句正则：匹配中文句号、感叹号、问号、分号及换行
+        raw_sentences = re.split(r"[。！？；\n]+", text)
+
+        # 2. 清洗与过滤
+        sentences = []
+        for idx, s in enumerate(raw_sentences):
+            cleaned = s.strip()
+            # 避坑防御：过滤掉小于 4 个字符的残片（如 "附则"、"第一章"、"表 1" 等无意义短标签）
+            # 否则分母 N 会被大量标题残片虚抬，导致真实信噪比被严重低估！
+            if len(cleaned) >= 4:
+                sentences.append(f"[{idx}] {cleaned}")
+        return sentences
+
+    all_texts = ""
+    for context in contexts:
+        all_texts += context + "\n"
+    all_sentences = split_sentences(all_texts)
+
+    refs = ""
+    for sentence in all_sentences:
+        refs += sentence + "\n"
+
+    prompt = ChatPromptTemplate.from_template(
+        '根据问题"{query}"，请输出回答该问题所不可或缺的参考句子编号列表，格式为JSON如{{"relevant_ids": [1, 2]}}\n'
+        "参考句子如下：\n"
+        "{refs}"
     )
+
+    chain = prompt | judge_llm | StrOutputParser()
+
+    out = chain.invoke({"query": query, "refs": refs})
+
+    cleaned = out.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        data = json.loads(cleaned)
+        relevant_ids = data.get("relevant_ids", data.get("relevants_ids", []))
+    except Exception:
+        relevant_ids = [0]
+
+    relevant_sentences = [all_sentences[idx] for idx in relevant_ids if 0 <= idx < len(all_sentences)]
+    relevant_count = len(relevant_sentences)
+    total_sentence = len(all_sentences)
+
+    cr_score = relevant_count / total_sentence if total_sentence > 0 else 0.0
+
+    return (cr_score, relevant_sentences, all_sentences)
 
 
 def run_end_to_end_rag_comparison(
@@ -306,9 +422,37 @@ def run_end_to_end_rag_comparison(
     3. 分别收集为 baseline_scores 和 candidate_scores 并返回。
     """
     # TODO 2: 请实现端到端 A/B 评测驱动主逻辑
-    raise NotImplementedError(
-        "【关卡 2 待实现】：请实现 run_end_to_end_rag_comparison 端到端对比流水线！完成后删除本行。"
-    )
+
+    def eval_system(outputs: List[RagSystemOutput]) -> List[RagTriadScore]:
+        scores = []
+        for sample in outputs:
+            cr_score, _, _ = evaluate_context_relevance(
+                sample.query, sample.retrieved_contexts, judge_llm
+            )
+            statements = extract_atomic_statements(sample.generated_answer, judge_llm)
+            f_score, _ = evaluate_faithfulness(
+                statements, sample.retrieved_contexts, judge_llm
+            )
+            ar_score, _ = evaluate_answer_relevance(
+                sample.query,
+                sample.generated_answer,
+                embed_model,
+                judge_llm,
+                num_reverse_questions=3,
+            )
+            scores.append(
+                RagTriadScore(
+                    query=sample.query,
+                    context_relevance=cr_score,
+                    faithfulness=f_score,
+                    answer_relevance=ar_score,
+                    latency_ms=sample.latency_ms,
+                )
+            )
+        return scores
+
+    # 重点：返回包含两个列表的元组 (b_scores, c_scores)
+    return (eval_system(baseline_outputs), eval_system(candidate_outputs))
 
 
 def evaluate_quality_gate(
@@ -330,8 +474,50 @@ def evaluate_quality_gate(
     若有任意一项违背，返回 QualityGateResult(passed=False, decision="BLOCK", reasons=[...])。
     """
     # TODO 3: 请实现基于规则与统计均值的质量卡点熔断器
-    raise NotImplementedError(
-        "【关卡 3 待实现】：请实现 evaluate_quality_gate 质量门禁决策逻辑！完成后删除本行。"
+
+    baseline_avg = {"cr": 0, "faith": 0, "ar": 0}
+
+    cr_list = []
+    faith_list = []
+    for baseline_score in baseline_scores:
+        cr_list.append(baseline_score.context_relevance)
+        faith_list.append(baseline_score.faithfulness)
+    baseline_cr_avg = float(np.mean(cr_list))
+    baseline_faith_avg = float(np.mean(faith_list))
+
+    cr_list = []
+    faith_list = []
+    for candidate_score in candidate_scores:
+        cr_list.append(candidate_score.context_relevance)
+        faith_list.append(candidate_score.faithfulness)
+    candidate_cr_avg = float(np.mean(cr_list))
+    candidate_faith_avg = float(np.mean(faith_list))
+
+    gate_1 = candidate_faith_avg >= min_faithfulness
+    gate_2 = (
+        (candidate_cr_avg - baseline_cr_avg) / baseline_cr_avg
+    ) >= min_context_relevance_boost
+    gate_3 = all(s.faithfulness > 0.0 for s in candidate_scores)
+
+    if gate_1 and gate_2 and gate_3:
+        passed = True
+        decision = "PASS"
+    else:
+        passed = False
+        decision = "BLOCK"
+
+    return QualityGateResult(
+        passed=passed,
+        decision=decision,
+        reasons=[f"gate_1: {gate_1}", f"gate_2: {gate_2}", f"gate_3: {gate_3}"],
+        baseline_avg={
+            "context_relevance": baseline_cr_avg,
+            "faithfulness": baseline_faith_avg,
+        },
+        candidate_avg={
+            "context_relevance": candidate_cr_avg,
+            "faithfulness": candidate_faith_avg,
+        },
     )
 
 
@@ -357,10 +543,10 @@ if __name__ == "__main__":
             retrieved_contexts=[
                 "第一章 总则 第一条 为了规范差旅费管理，制定本办法。第二条 本办法适用于中央和国家机关各部门。",
                 "第七条 出差人员应当按规定等级乘坐交通工具。部级及相当职务人员可乘高铁商务座；司局级及相当职务人员可乘高铁一等座；其余人员可乘高铁二等座。",
-                "附则 第二十八条 本办法自发布之日起施行。由财政部负责解释。"
+                "附则 第二十八条 本办法自发布之日起施行。由财政部负责解释。",
             ],
             generated_answer="普通员工出差不能乘坐一等座，只能乘坐二等座。依据总则和交通规定，普通员工属于其余人员。",
-            latency_ms=85.0
+            latency_ms=85.0,
         )
     ]
 
@@ -372,7 +558,7 @@ if __name__ == "__main__":
                 "第七条 出差人员应当按规定等级乘坐交通工具。乘坐火车级别：部级人员可乘商务座；司局级人员可乘一等座；其余人员可乘二等座。"
             ],
             generated_answer="普通员工出差不能买高铁一等座。根据第七条规定，普通员工属于其余人员，仅可乘坐高铁二等座，一等座仅供司局级及以上人员乘坐。",
-            latency_ms=120.0
+            latency_ms=120.0,
         )
     ]
 
@@ -390,11 +576,19 @@ if __name__ == "__main__":
     # 打印量化对比台账
     print("\n📊 【RAG Triad 全维度端到端对比评测台账】")
     print("-" * 80)
-    print(f"{'指标名称':<25} | {'Naive RAG (Baseline)':<22} | {'Advanced RAG (Candidate)':<22}")
+    print(
+        f"{'指标名称':<25} | {'Naive RAG (Baseline)':<22} | {'Advanced RAG (Candidate)':<22}"
+    )
     print("-" * 80)
-    print(f"{'1. Context Relevance (信噪比)':<25} | {b_scores[0].context_relevance:<22.4f} | {c_scores[0].context_relevance:<22.4f}")
-    print(f"{'2. Faithfulness (真实度)':<25} | {b_scores[0].faithfulness:<22.4f} | {c_scores[0].faithfulness:<22.4f}")
-    print(f"{'3. Answer Relevance (切题度)':<25} | {b_scores[0].answer_relevance:<22.4f} | {c_scores[0].answer_relevance:<22.4f}")
+    print(
+        f"{'1. Context Relevance (信噪比)':<25} | {b_scores[0].context_relevance:<22.4f} | {c_scores[0].context_relevance:<22.4f}"
+    )
+    print(
+        f"{'2. Faithfulness (真实度)':<25} | {b_scores[0].faithfulness:<22.4f} | {c_scores[0].faithfulness:<22.4f}"
+    )
+    print(
+        f"{'3. Answer Relevance (切题度)':<25} | {b_scores[0].answer_relevance:<22.4f} | {c_scores[0].answer_relevance:<22.4f}"
+    )
     print("-" * 80)
 
     # 执行 CI/CD 质量卡点

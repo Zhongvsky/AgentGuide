@@ -28,6 +28,8 @@ site/
 # Vector indices & large data files
 *.index
 *.faiss
+*.db
+*.db/
 data.index
 data.json
 *.bin
