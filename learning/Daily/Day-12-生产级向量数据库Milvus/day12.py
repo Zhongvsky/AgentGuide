@@ -35,7 +35,6 @@ os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 from sentence_transformers import SentenceTransformer
 from pymilvus import MilvusClient, DataType
 
-
 # ==========================================
 # 1. 契约定义 (Data Models & Contracts)
 # ==========================================
@@ -45,7 +44,9 @@ class DocumentRecord(BaseModel):
     """待入库的文档片段与标量元数据契约"""
 
     text: str = Field(..., description="文档正文内容")
-    department: str = Field(..., description="所属部门，如：'财务部', '行政部', '技术部'")
+    department: str = Field(
+        ..., description="所属部门，如：'财务部', '行政部', '技术部'"
+    )
     doc_type: str = Field(..., description="文档类型，如：'规章', '通知', '指引'")
     effective_year: int = Field(..., description="生效年份，如：2024, 2025, 2026")
 
@@ -76,9 +77,10 @@ def get_milvus_client(db_path: str = "milvus_travel.db") -> MilvusClient:
     docker_uri = "http://localhost:19530"
     try:
         import socket
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(0.5)
-        is_docker_up = (sock.connect_ex(("127.0.0.1", 19530)) == 0)
+        is_docker_up = sock.connect_ex(("127.0.0.1", 19530)) == 0
         sock.close()
         if is_docker_up:
             client = MilvusClient(uri=docker_uri)
@@ -88,7 +90,9 @@ def get_milvus_client(db_path: str = "milvus_travel.db") -> MilvusClient:
         pass
 
     # 优雅回退到 Milvus-Lite 本地无依赖文件模式
-    print(f"[*] Docker Milvus 未启动，自动启用本地嵌入式 Milvus-Lite 存储引擎 ({db_path})...")
+    print(
+        f"[*] Docker Milvus 未启动，自动启用本地嵌入式 Milvus-Lite 存储引擎 ({db_path})..."
+    )
     client = MilvusClient(uri=db_path)
     return client
 
@@ -123,9 +127,21 @@ def create_collection_with_schema(
     5. 打印创建成功提示。
     """
     # TODO 1: 请实现强类型 Collection Schema 设计与集合初始化
-    raise NotImplementedError(
-        "【关卡 1 待实现】：请实现 create_collection_with_schema 集合 Schema 设计！完成后删除本行。"
-    )
+    if client.has_collection(collection_name):
+        client.drop_collection(collection_name)
+
+    schema = client.create_schema(auto_id=True, enable_dynamic_field=True)
+    schema.add_field(field_name="id", datatype=DataType.INT64, is_primary=True)
+    schema.add_field(field_name="vector", datatype=DataType.FLOAT_VECTOR, dim=dim)
+    schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=1000)
+    schema.add_field(field_name="department", datatype=DataType.VARCHAR, max_length=64)
+    schema.add_field(field_name="doc_type", datatype=DataType.VARCHAR, max_length=64)
+    schema.add_field(field_name="effective_year", datatype=DataType.INT64)
+
+    client.create_collection(collection_name=collection_name, schema=schema)
+    print("Collection with schema is built.")
+
+    return
 
 
 def build_index_and_load(
@@ -153,9 +169,18 @@ def build_index_and_load(
     5. 打印索引构建与加载完成提示。
     """
     # TODO 2: 请实现向量索引参数配置、索引创建与集合加载
-    raise NotImplementedError(
-        "【关卡 2 待实现】：请实现 build_index_and_load 向量索引构建与加载！完成后删除本行。"
+
+    index_params = client.prepare_index_params()
+    index_params.add_index(
+        field_name="vector",
+        index_type="HNSW",
+        metric_type=metric_type,
+        params={"M": 16, "efConstruction": 64},
     )
+    client.create_index(collection_name, index_params)
+    client.load_collection(collection_name)
+
+    return
 
 
 def search_with_scalar_filter(
@@ -193,10 +218,32 @@ def search_with_scalar_filter(
        )；
     4. 返回 List[SearchResultItem]。
     """
-    # TODO 3: 请实现支持 Boolean Filter 表达式的 Milvus 混合检索
-    raise NotImplementedError(
-        "【关卡 3 待实现】：请实现 search_with_scalar_filter 标量混合过滤检索！完成后删除本行。"
+    # 关卡 3: 支持 Boolean Filter 表达式的 Milvus 混合检索
+    if output_fields is None:
+        output_fields = ["text", "department", "doc_type", "effective_year"]
+
+    res_search = client.search(
+        collection_name=collection_name,
+        data=[query_vector],
+        filter=filter_expr if filter_expr else "",
+        limit=limit,
+        output_fields=output_fields,
+        search_params={"metric_type": "COSINE", "params": {"ef": 64}},
     )
+
+    res = []
+    for hit in res_search[0]:
+        res.append(
+            SearchResultItem(
+                id=hit["id"],
+                distance=float(hit["distance"]),
+                text=hit["entity"]["text"],
+                department=hit["entity"]["department"],
+                doc_type=hit["entity"]["doc_type"],
+                effective_year=int(hit["entity"]["effective_year"]),
+            )
+        )
+    return res
 
 
 # ==========================================
@@ -208,7 +255,7 @@ if __name__ == "__main__":
     DB_PATH = "milvus_travel.db"
 
     print("[*] 正在加载 Embedding 向量模型 (BAAI/bge-small-zh-v1.5)...")
-    embed_model = SentenceTransformer("BAAI/bge-small-zh-v1.5")
+    embed_model = SentenceTransformer("BAAI/bge-small-zh-v1.5", local_files_only=True)
     VECTOR_DIM = embed_model.get_sentence_embedding_dimension()
 
     print("[*] 正在初始化 Milvus 客户端...")
@@ -258,13 +305,15 @@ if __name__ == "__main__":
     insert_data = []
     for doc in sample_docs:
         vec = embed_model.encode(doc.text, normalize_embeddings=True).tolist()
-        insert_data.append({
-            "vector": vec,
-            "text": doc.text,
-            "department": doc.department,
-            "doc_type": doc.doc_type,
-            "effective_year": doc.effective_year,
-        })
+        insert_data.append(
+            {
+                "vector": vec,
+                "text": doc.text,
+                "department": doc.department,
+                "doc_type": doc.doc_type,
+                "effective_year": doc.effective_year,
+            }
+        )
     insert_res = client.insert(collection_name=COLLECTION_NAME, data=insert_data)
     print(f"[+] 数据插入成功，写入记录数: {insert_res['insert_count']} 条！")
 
@@ -293,7 +342,9 @@ if __name__ == "__main__":
         limit=3,
     )
     for rank, item in enumerate(raw_results, 1):
-        print(f"Top-{rank} | 余弦得分: {item.distance:.4f} | 部门: {item.department} | 类型: {item.doc_type} | 年份: {item.effective_year}")
+        print(
+            f"Top-{rank} | 余弦得分: {item.distance:.4f} | 部门: {item.department} | 类型: {item.doc_type} | 年份: {item.effective_year}"
+        )
         print(f"       ↳ 内容: {item.text[:60]}...")
 
     # 实验 B: 带结构化标量前置过滤（指定部门 + 生效年份）
@@ -308,17 +359,26 @@ if __name__ == "__main__":
         limit=3,
     )
     for rank, item in enumerate(filtered_results, 1):
-        print(f"Top-{rank} | 余弦得分: {item.distance:.4f} | 部门: {item.department} | 类型: {item.doc_type} | 年份: {item.effective_year}")
+        print(
+            f"Top-{rank} | 余弦得分: {item.distance:.4f} | 部门: {item.department} | 类型: {item.doc_type} | 年份: {item.effective_year}"
+        )
         print(f"       ↳ 内容: {item.text[:60]}...")
 
     # 5. 验收断言
     print("\n" + "=" * 80)
     print("🏁 【验收核验结果】:")
-    is_pure_finance = all(item.department == "财务部" and item.effective_year >= 2024 for item in filtered_results)
+    is_pure_finance = all(
+        item.department == "财务部" and item.effective_year >= 2024
+        for item in filtered_results
+    )
     if is_pure_finance and len(filtered_results) > 0:
-        print("✅ [VERIFICATION PASSED]: 标量前置过滤生效！非财务部及历史废弃文档被 100% 物理隔离排除！")
+        print(
+            "✅ [VERIFICATION PASSED]: 标量前置过滤生效！非财务部及历史废弃文档被 100% 物理隔离排除！"
+        )
     else:
-        print("❌ [VERIFICATION FAILED]: 标量过滤未起效，请检查 filter_expr 语法与 search 调用！")
+        print(
+            "❌ [VERIFICATION FAILED]: 标量过滤未起效，请检查 filter_expr 语法与 search 调用！"
+        )
     print("=" * 80)
 
     # 优雅关闭客户端连接
