@@ -49,7 +49,8 @@ class LayoutBoundingBox(BaseModel):
     element_id: str = Field(..., description="元素唯一标识")
     text: str = Field(..., description="提取出的文字内容")
     box_type: str = Field(
-        ..., description="元素类型：'title' | 'narrative' | 'table' | 'header' | 'footer'"
+        ...,
+        description="元素类型：'title' | 'narrative' | 'table' | 'header' | 'footer'",
     )
     # Bounding Box 空间绝对坐标: (x0, y0, x1, y1), 页面左上角为原点 (0, 0)
     bbox: Tuple[float, float, float, float] = Field(
@@ -102,9 +103,38 @@ def reconstruct_table_to_markdown(cells: List[TableCell]) -> str:
     提示：若某单元格缺失，使用空字符串占位保持列数整齐。
     """
     # TODO 1: 请实现表格网格重构与 Markdown 序列化
-    raise NotImplementedError(
-        "【关卡 1 待实现】：请实现 reconstruct_table_to_markdown 表格还原！完成后删除本行。"
-    )
+    max_rows, max_cols = 0, 0
+    for cell in cells:
+        max_rows = max(max_rows, cell.row_idx + 1)
+        max_cols = max(max_cols, cell.col_idx + 1)
+
+    grid = [["" for _ in range(max_cols)] for _ in range(max_rows)]
+
+    for cell in cells:
+        row_idx = cell.row_idx
+        col_idx = cell.col_idx
+        text = (cell.text).strip("").replace("\n", " ")
+        is_header = cell.is_header
+
+        if is_header:
+            assert (
+                row_idx == 0
+            ), f"If cell.is_header is True, cell.row_idx({cell.row_idx}) must be zero."
+        assert (
+            grid[row_idx][col_idx] == ""
+        ), f"grid cell at (row_idx, col_idx)=({row_idx}, {col_idx}) has been inserted"
+
+        grid[row_idx][col_idx] = text
+
+    lines = []
+    # 1. 表头行
+    lines.append("| " + " | ".join(grid[0]) + " |")
+    # 2. 分隔线
+    lines.append("| " + " | ".join([":---"] * max_cols) + " |")
+    # 3. 数据行
+    for r in range(1, max_rows):
+        lines.append("| " + " | ".join(grid[r]) + " |")
+    return "\n".join(lines)
 
 
 def reorder_multi_column_and_filter_noise(
@@ -137,9 +167,32 @@ def reorder_multi_column_and_filter_noise(
     4. 合并并返回：左栏所有元素 + 右栏所有元素。
     """
     # TODO 2: 请实现基于空间几何的双栏重构与噪音过滤
-    raise NotImplementedError(
-        "【关卡 2 待实现】：请实现 reorder_multi_column_and_filter_noise！完成后删除本行。"
-    )
+
+    eles_left, eles_right = [], []
+    mid_page_x = page_width / 2
+
+    for element in elements:
+        text = element.text
+        box_type = element.box_type
+        x0, y0, x1, y1 = element.bbox
+
+        if (
+            (box_type in ("header", "footer"))
+            or (y0 < page_height * header_threshold_ratio)
+            or (y1 > page_height * footer_threshold_ratio)
+        ):
+            continue
+
+        mid_x = (x0 + x1) / 2
+        if mid_x <= mid_page_x:
+            eles_left.append(element)
+        else:
+            eles_right.append(element)
+
+    eles_left = sorted(eles_left, key=lambda ele: ele.bbox[1])
+    eles_right = sorted(eles_right, key=lambda ele: ele.bbox[1])
+
+    return eles_left + eles_right
 
 
 def table_aware_chunking(
@@ -173,10 +226,71 @@ def table_aware_chunking(
     3. 遍历结束后，若 buffer 中还有剩余文本，flush 最后一个普通 Chunk；
     4. 返回 List[DocumentChunk]。
     """
+
     # TODO 3: 请实现表格感知的原子分块管线
-    raise NotImplementedError(
-        "【关卡 3 待实现】：请实现 table_aware_chunking 表格感知分块！完成后删除本行。"
-    )
+    def flush(is_table=False):
+
+        nonlocal current_length
+        nonlocal chunk_id
+        nonlocal text_buffer
+
+        if not is_table:
+            text = "\n\n".join(text_buffer)
+        else:
+            text = f"【所属章节：{current_section}】\n{element.content}"
+
+        document_chunks.append(
+            DocumentChunk(
+                chunk_id=str(chunk_id),
+                text=text,
+                is_table=is_table,
+                section_context=current_section,
+                char_length=len(text),
+            )
+        )
+
+        current_length = 0
+        chunk_id += 1
+        text_buffer = []
+
+        return
+
+    document_chunks = []
+
+    text_buffer = []
+    current_section = ""
+    last_element_type = ""
+
+    chunk_id = 0
+    current_length = 0
+
+    for element in elements:
+        if element.element_type == "title":
+            current_section = element.content
+            text_buffer.append(element.content)
+            current_length += len(element.content)
+            last_element_type = "title"
+
+        elif element.element_type == "narrative":
+            if current_length + len(element.content) > max_chunk_chars:
+                flush()
+
+            text_buffer.append(element.content)
+            current_length += len(element.content)
+            last_element_type = "narrative"
+
+        elif element.element_type == "table":
+            if (
+                text_buffer
+            ):  # 遇到新的 table 时，之前的内容只要不为空，都单独输出为一个 chunk，新的 table 要算入新的 chunk
+                flush()
+
+            flush(is_table=True)
+
+    if text_buffer:
+        flush()
+
+    return document_chunks
 
 
 # ==========================================
@@ -208,7 +322,9 @@ if __name__ == "__main__":
     print("生成的 Markdown 表格结构：")
     print(table_md)
 
-    assert "| 费用类别 | 报销标准上限（元/天） | 核销凭据要求 |" in table_md, "表头行生成异常"
+    assert (
+        "| 费用类别 | 报销标准上限（元/天） | 核销凭据要求 |" in table_md
+    ), "表头行生成异常"
     assert "| :--- | :--- | :--- |" in table_md, "对齐线分隔行生成异常"
     assert "滴滴出行发票或 出租车票据" in table_md, "未正确清洗单元格内部多余换行"
     print("✅ 关卡 1 验收通过：表格保真度与 Markdown 语法完全合规！")
@@ -275,9 +391,12 @@ if __name__ == "__main__":
     # 验证判定
     assert "h1" not in reordered_ids, "页眉噪音未被过滤"
     assert "f1" not in reordered_ids, "页脚噪音未被过滤"
-    assert reordered_ids == ["l1", "l2", "r1", "r2"], (
-        f"双栏阅读顺序错误！期望 ['l1', 'l2', 'r1', 'r2'], 实际得到 {reordered_ids}"
-    )
+    assert reordered_ids == [
+        "l1",
+        "l2",
+        "r1",
+        "r2",
+    ], f"双栏阅读顺序错误！期望 ['l1', 'l2', 'r1', 'r2'], 实际得到 {reordered_ids}"
     print("✅ 关卡 2 验收通过：双栏阅读序彻底恢复，页眉页脚公文噪音 100% 滤除！")
 
     # ----------------------------------------------------
@@ -319,10 +438,12 @@ if __name__ == "__main__":
     # 验证判定
     table_chunks = [c for c in chunks if c.is_table]
     assert len(table_chunks) == 1, "表格未被作为独立原子 Chunk 保留"
-    assert "【所属章节：第三章 差旅伙食及交通补贴细则】" in table_chunks[0].text, (
-        "表格 Chunk 未成功注入所属章节上下文"
-    )
-    assert "| 费用类别 | 报销标准上限（元/天） |" in table_chunks[0].text, "表格内容损坏"
+    assert (
+        "【所属章节：第三章 差旅伙食及交通补贴细则】" in table_chunks[0].text
+    ), "表格 Chunk 未成功注入所属章节上下文"
+    assert (
+        "| 费用类别 | 报销标准上限（元/天） |" in table_chunks[0].text
+    ), "表格内容损坏"
     print("\n" + "=" * 80)
     print("🏁 【全流程验收通过】:")
     print("✅ [VERIFICATION PASSED]: 高级文档版面分析与表格结构化处理全链路通过验收！")

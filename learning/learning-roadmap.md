@@ -14,7 +14,7 @@
 | 第4周 | 系统性能优化 | Redis 缓存、异步、批处理、vLLM |
 | 第5周 | 监控、可观测性与部署 | LangSmith、Prometheus、Grafana、Docker |
 | 第6周 | Multi-Agent 系统开发 | AutoGen、CrewAI |
-| 第7-8周 | 工业级项目实战与面试准备 | 两大项目 + 简历 + 面试 Mock |
+| 第7-8周 | 工业级项目实战与面试准备 | 两大专属代表作（计算摄影/ISP 故障排查 RAG + 画质诊断 Agent）+ 简历 + 面试 Mock |
 
 ---
 
@@ -63,7 +63,7 @@
 | Day 18 | Function Calling 实战 | OpenAI Function Calling、GPT Best Practices | 用 OpenAI API 实现按用户问题调用函数的 Agent |
 | Day 19 | Agent Memory | LangChain Memory、Mem0、MemoryScope | 为 Agent 添加对话历史记忆 |
 | Day 20 | Agent 错误处理 | Error Handling in Agents | 为工具调用加重试 (tenacity) 与降级策略 |
-| Day 21 | 周度总结与项目构建 | — | 构建集成 RAG + Web 搜索的「研究助手」Agent |
+| Day 21 | 周度总结与项目构建 | — | 构建集成 RAG + Web 搜索的「ISP 算法与代码研究助手」Agent |
 
 **本周手撕清单**
 - [ ] 实现 3 个自定义工具（天气、SQL 查询、API 调用）
@@ -121,32 +121,40 @@
 
 | 天数 | 学习主题 | 目标 |
 |---|---|---|
-| Day 43-47 | 项目一：智能客服 RAG | 需求分析、架构设计、核心功能开发 |
-| Day 48-51 | 项目一：优化与部署 | 性能优化、监控集成、Docker 部署、项目文档 |
-| Day 52-56 | 项目二：自动化投研 Agent | 需求分析、Agent 设计、工具开发、工作流实现 |
-| Day 57-58 | 简历撰写与项目总结 | 按开发岗模板量化写入两个项目 |
-| Day 59-60 | 系统设计与面试 Mock | 高频系统设计题 + 1v1 模拟面试 |
+| Day 43-47 | 项目一：工业级计算摄影与 ISP 故障排查专家 RAG | 需求分析、架构设计、ISP Spec/SOP 知识库构建与核心检索开发 |
+| Day 48-51 | 项目一：性能优化与容器化部署 | Milvus 标量过滤、混合检索 Rerank、RAGAs 忠实度评估、FastAPI 异步封装、Docker 部署 |
+| Day 52-56 | 项目二：基于 ReAct + 多模态工具链的画质故障自动诊断 Agent | 需求分析、自研 Python 图像诊断工具集开发、ReAct 闭环、根因推导与 C++ 调参建议生成 |
+| Day 57-58 | 简历撰写与项目总结 | 按算法/开发复合岗量化写入两大专属代表作项目 |
+| Day 59-60 | 系统设计与面试 Mock | 高频 Agent/RAG + 计算摄影系统设计题 + 1v1 模拟面试 |
 
 ---
 
 ## 二、项目详细要求
 
-### 项目一：企业级智能客服 RAG 系统
-- 业务场景：电商客服，自动回答 80% 重复问题（订单状态、物流、退款）
-- 数据源：FAQ 文档 + 商品数据库 (PostgreSQL)
-- 核心：混合检索 RAG，优先数据库精确查询，未命中再走文档模糊检索
-- 性能目标：QPS > 200，P99 延迟 < 500ms
-- 监控：LangSmith + Prometheus + Grafana 完整体系
-- 部署：Docker Compose
-- 简历亮点：高并发、低延迟、生产级监控、节省人力成本
+### 项目一：工业级计算摄影与 ISP 故障排查专家 RAG 系统
+- 业务场景：解决相机、手机与车载 ISP 影像算法研发中的高难度画质缺陷排查难、知识碎片化痛点（如 FGF 边缘光晕 Halo、暗部噪声塌陷、高光截断偏色、去鬼影连通域双轮廓/漏检、频闪）。
+- 数据源：ISP Pipeline 架构规范 + 光学/滤波算法原理（FGF/TMC/Deghosting/时空去噪） + 真实画质缺陷排障 SOP 手册 + C++ 模块参数配置字典（Milvus + SQLite/JSON）。
+- 核心技术：
+  - Milvus 强类型 Schema 与布尔标量物理前置过滤（按模块 `module=='TMC'`, 平台 `chip=='SA8155'`, 缺陷类型 `defect=='Halo'` 精准隔离）；
+  - BM25 + BGE 向量混合检索与 Cross-Encoder 重排；
+  - RAGAs 体系量化评估 Faithfulness 真实度与 Context Relevance 信噪比。
+- 性能与部署：FastAPI 异步高并发接口、Redis 缓存高频提问、Docker Compose 容器化一键部署、Prometheus + Grafana 可观测性大盘。
+- 简历亮点：打造行业首个 ISP 画质领域专家知识检索系统；长篇复杂 Spec 与宏配置检索从人工翻阅升级为秒级精准定位；P99 检索延迟 < 300ms，事实忠实度得分 > 0.90。
 
-### 项目二：Agent 驱动的自动化投研系统
-- 业务场景：输入公司名，自动完成信息搜集、分析、报告撰写
-- Multi-Agent：CrewAI 构建「信息搜集 Agent / 财报分析 Agent / 报告撰写 Agent」
-- 工具集：Google Search、SEC API、文件读写等 ≥ 5 个工具
-- 稳定性：异常处理 + 重试，任务成功率 > 95%
-- 工作流：顺序工作流，记录每步中间产出
-- 简历亮点：Multi-Agent 协作、复杂工作流自动化、效率提升量化
+### 项目二：基于 ReAct + 多模态视觉工具链的画质故障自动诊断 Agent
+- 业务场景：输入用户上报的画质 Bad Case 图像（或 ROI 区域）+ 当前 ISP Pipeline XML/JSON 配置文件，自动量化分析缺陷特征、匹配知识库定位根因，并输出针对特定 C++ 模块的调参建议。
+- ReAct 决策与协作架构：
+  - 感知分析层：自主调用自研 Python 图像量化分析工具包；
+  - 知识推理层：结合项目一的 Milvus 知识库，根据量化异常指标逆向推导物理机理（如判定是否为 FGF 8x 上采样在负斜率边缘协方差为负）；
+  - 方案输出层：输出结构化 Markdown 排障报告、精准定位出问题的模块，给出建议调整的 XML 配置参数或 C++ 宏分支修复建议。
+- 核心工具集（Tool Calling ≥ 5 个）：
+  1. `calc_halo_sdf`：基于边缘法向环带符号距离场（SDF）计算人像边缘 Halo 溢出度与 P95 分位数；
+  2. `calc_noise_envelope`：计算暗部局部方差与信噪比包络，评估噪声塌陷程度；
+  3. `calc_color_cast`：计算高光/暗部 RGB-YUV 色差与偏色角分布；
+  4. `parse_isp_config`：解析并提取当前模块滤波与增益配置参数字典；
+  5. `calc_ghost_metric`：多帧对齐差分与移动物体置信度校验。
+- 稳定性保障：Tenacity 异常自动重试、Pydantic 结构化输出强约束、模型幻觉防范与降级容错，复杂诊断任务成功率 > 95%。
+- 简历亮点：行业罕有的“计算摄影底层 + AI Agent 工具链”复合落地代表作；将资深算法工程师排查复杂画质 Bad Case 的耗时从“天级”缩短至“分钟级”；兼具深厚数理功底与前沿 Agent 架构落地能力。
 
 ---
 
@@ -159,6 +167,6 @@
 
 ## 四、简历三件套（第 57-58 天用）
 
-1. ≥ 2 个端到端可运行、有线上部署经验的系统项目
-2. 量化业务指标：QPS +100%、P99 延迟 -80%、成本 -50% 一类
-3. 生产级技术栈：LangChain + FastAPI + Milvus + Redis + Docker + Prometheus
+1. ≥ 2 个端到端可运行、有容器化部署与实测指标的专属领域项目（ISP 知识库 RAG + 画质自动诊断 Agent）
+2. 量化业务指标：故障定位效率提升 90%（天级 -> 分钟级）、P99 检索延迟 < 300ms、RAGAs 忠实度 0.90+、并发吞吐提升
+3. 生产级技术栈：FastAPI + LangChain + Milvus + Redis + Docker + Prometheus + Python 视觉分析算子库
