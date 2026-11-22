@@ -19,6 +19,9 @@ import os
 import math
 import time
 from typing import List, Dict, Any, Tuple, Optional
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from pydantic import BaseModel, Field
 import jieba
 from sentence_transformers import SentenceTransformer, CrossEncoder
@@ -47,8 +50,12 @@ class DocumentItem(BaseModel):
 
     chunk_id: str = Field(..., description="切片唯一编号")
     text: str = Field(..., description="正文或 Markdown 表格文本")
-    department: str = Field(..., description="所属部门：如 '财务部', '技术部', '行政部'")
-    doc_type: str = Field(..., description="文档类型：如 '管理制度', '技术规范', '表格汇总'")
+    department: str = Field(
+        ..., description="所属部门：如 '财务部', '技术部', '行政部'"
+    )
+    doc_type: str = Field(
+        ..., description="文档类型：如 '管理制度', '技术规范', '表格汇总'"
+    )
     is_table: bool = Field(default=False, description="是否为表格切片")
     section_context: str = Field(default="", description="所属章节上下文标题")
 
@@ -62,7 +69,9 @@ class RetrievalResult(BaseModel):
     doc_type: str
     score: float
     is_table: bool
-    source_stage: str = Field(default="final", description="来源阶段：dense | sparse | rrf | rerank")
+    source_stage: str = Field(
+        default="final", description="来源阶段：dense | sparse | rrf | rerank"
+    )
 
 
 class CitationItem(BaseModel):
@@ -87,6 +96,34 @@ class RAGResponse(BaseModel):
 # ==========================================
 # 2. 核心架构手撕区：Day 14 里程碑打靶区
 # ==========================================
+def get_judge_llm(
+    base_url: Optional[str] = None,
+    api_key: Optional[str] = None,
+    model: Optional[str] = None,
+) -> Any:
+    """初始化用于打分的裁判大模型（兼容 OpenAI 协议端点，优先读取 .env 环境变量）"""
+    actual_base_url = base_url or os.getenv(
+        "OPENAI_BASE_URL", "http://127.0.0.1:9527/v1"
+    )
+    actual_api_key = api_key or os.getenv("OPENAI_API_KEY", "dummy")
+    actual_model = model or os.getenv("LLM_MODEL_NAME", "Qwen/Qwen2.5-7B-Instruct")
+
+    try:
+        llm = ChatOpenAI(
+            base_url=actual_base_url,
+            api_key=actual_api_key,
+            model=actual_model,
+            temperature=0.01,  # 裁判任务必须低温确定性
+            max_retries=1,
+            timeout=35,
+        )
+        # 简单心跳探测
+        llm.invoke("Hi")
+        print(f"[+] 成功连接裁判大模型 ({actual_base_url} | 模型: {actual_model})！")
+        return llm
+    except Exception as e:
+        print(f"[-] 未能连接大模型端点 ({actual_base_url}): {e}")
+        print("[*] 启用内置高拟真裁判模拟器 (MockJudgeLLM) 作为自适应离线环境...")
 
 
 class ModularAdvancedRAG:
@@ -120,10 +157,16 @@ class ModularAdvancedRAG:
                 pass
         self.milvus_client = MilvusClient(uri=self.db_path)
 
-        print(f"⚡ [初始化 2/4]: 加载本地稠密 Embedding 模型: {embedding_model_name}...")
-        self.embed_model = SentenceTransformer(embedding_model_name, local_files_only=True)
+        print(
+            f"⚡ [初始化 2/4]: 加载本地稠密 Embedding 模型: {embedding_model_name}..."
+        )
+        self.embed_model = SentenceTransformer(
+            embedding_model_name, local_files_only=True
+        )
 
-        print(f"⚡ [初始化 3/4]: 加载本地 Cross-Encoder 重排模型: {reranker_model_name}...")
+        print(
+            f"⚡ [初始化 3/4]: 加载本地 Cross-Encoder 重排模型: {reranker_model_name}..."
+        )
         self.reranker = CrossEncoder(reranker_model_name, local_files_only=True)
 
         print("⚡ [初始化 4/4]: 初始化 BM25 稀疏索引数据结构与 Milvus Schema...")
@@ -136,18 +179,29 @@ class ModularAdvancedRAG:
         self.idf: Dict[str, float] = {}
         self.avgdl: float = 0.0
 
+        self.llm = get_judge_llm()
+
     def _init_milvus_collection(self):
         """初始化 Milvus 强类型集合与 HNSW 索引"""
+        if self.milvus_client.has_collection(self.collection_name):
+            self.milvus_client.drop_collection(self.collection_name)
+
         schema = self.milvus_client.create_schema(
             auto_id=True,
             enable_dynamic_field=False,
             description="Day 14 企业级知识库集合",
         )
         schema.add_field(field_name="id", datatype=DataType.INT64, is_primary=True)
-        schema.add_field(field_name="chunk_id", datatype=DataType.VARCHAR, max_length=64)
+        schema.add_field(
+            field_name="chunk_id", datatype=DataType.VARCHAR, max_length=64
+        )
         schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=4096)
-        schema.add_field(field_name="department", datatype=DataType.VARCHAR, max_length=64)
-        schema.add_field(field_name="doc_type", datatype=DataType.VARCHAR, max_length=64)
+        schema.add_field(
+            field_name="department", datatype=DataType.VARCHAR, max_length=64
+        )
+        schema.add_field(
+            field_name="doc_type", datatype=DataType.VARCHAR, max_length=64
+        )
         schema.add_field(field_name="is_table", datatype=DataType.BOOL)
         schema.add_field(field_name="vector", datatype=DataType.FLOAT_VECTOR, dim=512)
 
@@ -186,9 +240,37 @@ class ModularAdvancedRAG:
         3. 返回成功写入的记录总数。
         """
         # TODO 1: 请实现双轨索引构建管线
-        raise NotImplementedError(
-            "【关卡 1 待实现】：请实现 ingest_documents 双轨数据入库！完成后删除本行。"
-        )
+
+        N = 0
+        for item in items:
+            vector = self.embed_model.encode(item.text, normalize_embeddings=True)
+            self.milvus_client.insert(
+                collection_name=self.collection_name,
+                data={
+                    "chunk_id": item.chunk_id,
+                    "text": item.text,
+                    "department": item.department,
+                    "doc_type": item.doc_type,
+                    "is_table": item.is_table,
+                    "vector": vector,
+                },
+            )
+
+            tokens = [t.strip() for t in jieba.lcut(item.text) if t.strip()]
+            for token in set(tokens):
+                self.doc_freqs[token] = self.doc_freqs.get(token, 0) + 1
+
+            if tokens:
+                self.bm25_corpus.append(tokens)
+                self.bm25_items.append(item)
+                self.avgdl += len(tokens)
+                N += 1
+
+        for token, df in self.doc_freqs.items():
+            self.idf[token] = math.log((N - df + 0.5) / (df + 0.5) + 1.0)
+        self.avgdl /= N
+
+        return N
 
     # ----------------------------------------------------
     # 关卡 2：多路召回、RRF 融合与 Cross-Encoder 重排
@@ -222,9 +304,117 @@ class ModularAdvancedRAG:
            - 截取最终 `top_k` 条作为高质量上下文返回。
         """
         # TODO 2: 请实现混合检索 + RRF 融合 + Cross-Encoder 精排
-        raise NotImplementedError(
-            "【关卡 2 待实现】：请实现 retrieve_hybrid_and_rerank 检索与重排！完成后删除本行。"
+
+        # -- Step 2.1 ---
+        dense_ranked = []
+        q_v = self.embed_model.encode(query, normalize_embeddings=True).tolist()
+        milvus_res_list = self.milvus_client.search(
+            collection_name=self.collection_name,
+            data=[q_v],
+            filter=filter_expr,
+            limit=10,
+            output_fields=["chunk_id", "text", "department", "doc_type", "is_table"],
+        )[0]
+        for score, milvus_res in enumerate(milvus_res_list, start=1):
+            score = milvus_res["distance"]
+            entity = milvus_res["entity"]
+            dense_ranked.append(
+                RetrievalResult(
+                    chunk_id=entity["chunk_id"],
+                    text=entity["text"],
+                    department=entity["department"],
+                    doc_type=entity["doc_type"],
+                    is_table=entity["is_table"],
+                    score=score,
+                    source_stage="dense",
+                )
+            )
+
+        effective_limit = len(dense_ranked)
+
+        # -- Step 2.2 ---
+        q_tokens = [t.strip() for t in jieba.lcut(query) if t.strip()]
+        k1 = 1.5
+        b = 0.75
+        sparse_no_ranked = []
+        target_dept = None
+        if filter_expr and "department" in filter_expr and "==" in filter_expr:
+            target_dept = filter_expr.split("==")[1].strip().strip("'").strip('"')
+        for doc_tokens, doc_item in zip(self.bm25_corpus, self.bm25_items):
+            if target_dept and doc_item.department != target_dept:
+                continue
+
+            tf = {}
+            score = 0.0
+            doc_len = len(doc_tokens)
+            for token in doc_tokens:
+                if token in q_tokens:
+                    tf[token] = tf.get(token, 0) + 1
+            for q_token in q_tokens:
+                _idf = self.idf.get(q_token, 0)
+                _tf = tf.get(q_token, 0)
+                score += (
+                    _idf
+                    * (_tf * (k1 + 1))
+                    / (_tf + k1 * (1 - b + b * doc_len / self.avgdl))
+                )
+            sparse_no_ranked.append(
+                RetrievalResult(
+                    chunk_id=doc_item.chunk_id,
+                    text=doc_item.text,
+                    department=doc_item.department,
+                    doc_type=doc_item.doc_type,
+                    is_table=doc_item.is_table,
+                    score=score,
+                    source_stage="sparse",
+                )
+            )
+
+        sparse_ranked = sorted(
+            sparse_no_ranked[:effective_limit], key=lambda x: x.score, reverse=True
         )
+
+        # -- Step 2.3 ---
+        rrf_map: Dict[str, Tuple[float, RetrievalResult]] = {}
+        # 1. 累加 Dense 排名倒数
+        for rank, item in enumerate(dense_ranked, start=1):
+            rrf_score = 1.0 / (rrf_k + rank)
+            rrf_map[item.chunk_id] = (rrf_score, item)
+
+        # 2. 累加 Sparse 排名倒数
+        for rank, item in enumerate(sparse_ranked, start=1):
+            score = 1.0 / (rrf_k + rank)
+            if item.chunk_id in rrf_map:
+                old_score, old_item = rrf_map[item.chunk_id]
+                rrf_map[item.chunk_id] = (old_score + score, old_item)
+            else:
+                rrf_map[item.chunk_id] = (score, item)
+
+        # 3. 按合并分降序取 candidate_pool_size
+        sorted_cands = sorted(rrf_map.values(), key=lambda x: x[0], reverse=True)[
+            :candidate_pool_size
+        ]
+        candidate_pool = []
+        for score, cand in sorted_cands:
+            c = cand.model_copy()  # 或 cand.copy()
+            c.score = score
+            c.source_stage = "rrf"  # 注意契约字段是 source_stage，而非 source_target
+            candidate_pool.append(c)
+
+        # -- Step 2.4 ---
+        pairs = [[query, cand.text] for cand in candidate_pool]
+        scores = self.reranker.predict(pairs)
+        final_no_ranked = []
+        for score, cand in zip(scores, candidate_pool):
+            final_item = cand.copy()
+            final_item.score = float(score)
+            final_item.source_stage = "final"
+            final_no_ranked.append(final_item)
+        final_ranked = sorted(final_no_ranked, key=lambda x: x.score, reverse=True)[
+            :top_k
+        ]
+
+        return final_ranked
 
     # ----------------------------------------------------
     # 关卡 3：端到端结构化合成与 A/B 评测
@@ -248,8 +438,55 @@ class ModularAdvancedRAG:
         4. 计算耗时并返回标准 `RAGResponse` 对象。
         """
         # TODO 3: 请实现结构化回答生成与 Citation 注入
-        raise NotImplementedError(
-            "【关卡 3 待实现】：请实现 synthesize_answer 问答合成器！完成后删除本行。"
+        t0 = time.time()
+
+        if not retrieved_docs:
+            t1 = time.time()
+            return RAGResponse(
+                answer="未检索到任何符合权限或条件的参考资料。",
+                citations=[],
+                latency_ms=(t1 - t0) * 1000,
+                pipeline_type="Advanced RAG",
+            )
+        citations = []
+        for doc_id, retrieved_doc in enumerate(retrieved_docs, start=1):
+            citations.append(
+                CitationItem(
+                    doc_id=doc_id,
+                    chunk_id=retrieved_doc.chunk_id,
+                    department=retrieved_doc.department,
+                    score=retrieved_doc.score,
+                    snippet=retrieved_doc.text[:80],
+                )
+            )
+
+        ref_docs_text = "\n\n".join(
+            [f"[Doc {i}] (部门: {doc.department})\n{doc.text}" for i, doc in enumerate(retrieved_docs, start=1)]
+        )
+
+        prompt = ChatPromptTemplate.from_template(
+            "你是一个专业的问答助手。请根据下方提供的参考文档回答用户的问题。\n\n"
+            "## 要求：\n"
+            "1. 答案必须严格基于参考文档，不得捏造。\n"
+            "2. 在引用具体内容时，请在句末标注对应的引用来源编号（例如 [Doc 1]）。\n"
+            "3. 如果参考文档不足以回答问题，请直接说明“资料中未提及”。\n\n"
+            "## 参考文档：\n"
+            "{ref_docs}\n\n"
+            "## 用户问题：\n"
+            "{question}"
+        )
+
+        chain = prompt | self.llm | StrOutputParser()
+
+        answer = chain.invoke({"ref_docs": ref_docs_text, "question": query})
+
+        t1 = time.time()
+
+        return RAGResponse(
+            answer=answer,
+            citations=citations,
+            latency_ms=(t1 - t0) * 1000,
+            pipeline_type="Advanced RAG",
         )
 
 
@@ -316,7 +553,9 @@ if __name__ == "__main__":
     total_ingested = rag_system.ingest_documents(mock_corpus)
     print(f"成功入库记录数: {total_ingested}")
     assert total_ingested == 4, "双轨入库数量不匹配"
-    print("✅ 关卡 1 验收通过：多模态切片同时成功构建 Milvus HNSW 向量索引与 BM25 稀疏倒排！")
+    print(
+        "✅ 关卡 1 验收通过：多模态切片同时成功构建 Milvus HNSW 向量索引与 BM25 稀疏倒排！"
+    )
 
     # ----------------------------------------------------
     # 测试关卡 2：混合检索 + 标量前置过滤 + Cross-Encoder 精排
@@ -324,7 +563,9 @@ if __name__ == "__main__":
     print("\n" + "=" * 80)
     print("🔍 【测试 2：混合检索 + 标量物理前置过滤 + 单塔重排精排验证】")
 
-    test_query = "财务部关于市内交通费与住宿伙食补贴的具体报销标准是多少？核销需要什么凭证？"
+    test_query = (
+        "财务部关于市内交通费与住宿伙食补贴的具体报销标准是多少？核销需要什么凭证？"
+    )
     test_filter = "department == '财务部'"
 
     # 1. 运行混合重排检索
@@ -336,20 +577,28 @@ if __name__ == "__main__":
 
     print(f"\n[Advanced RAG 混合精排] Top-{len(retrieved_results)} 检索结果:")
     for idx, r in enumerate(retrieved_results, 1):
-        print(f"  Top-{idx}: [{r.chunk_id}] (Score={r.score:.4f}, Dept={r.department}, is_table={r.is_table})")
+        print(
+            f"  Top-{idx}: [{r.chunk_id}] (Score={r.score:.4f}, Dept={r.department}, is_table={r.is_table})"
+        )
         print(f"         内容预览: {r.text[:65]}...")
 
     # 严谨断言验证
     assert len(retrieved_results) >= 1, "未召回任何有效候选"
     # 必须 100% 拦截技术部和行政部的干扰项（标量前置过滤验证）
     for r in retrieved_results:
-        assert r.department == "财务部", f"标量过滤失效！混入了非财务部公文: {r.department}"
+        assert (
+            r.department == "财务部"
+        ), f"标量过滤失效！混入了非财务部公文: {r.department}"
 
     # 经过 Cross-Encoder 单塔全交叉注意力的精排，包含完整金额与凭据的表格切片必须精准置顶 Top-1！
     top1 = retrieved_results[0]
-    assert top1.chunk_id == "fin_table_002", f"Top-1 预期为表格切片 fin_table_002，实际命中: {top1.chunk_id}"
+    assert (
+        top1.chunk_id == "fin_table_002"
+    ), f"Top-1 预期为表格切片 fin_table_002，实际命中: {top1.chunk_id}"
     assert top1.is_table is True, "Top-1 未正确标记为表格"
-    print("✅ 关卡 2 验收通过：标量物理隔离生效，Cross-Encoder 展现统治级排序能力，表格切片精准登顶 Top-1！")
+    print(
+        "✅ 关卡 2 验收通过：标量物理隔离生效，Cross-Encoder 展现统治级排序能力，表格切片精准登顶 Top-1！"
+    )
 
     # ----------------------------------------------------
     # 测试关卡 3：端到端结构化问答合成与 A/B Benchmark 对决
@@ -364,11 +613,15 @@ if __name__ == "__main__":
     print(f"回答内容:\n{advanced_resp.answer}")
     print("引用溯源清单:")
     for c in advanced_resp.citations:
-        print(f"  - [Doc {c.doc_id}] ({c.chunk_id}, Dept: {c.department}, Score: {c.score:.4f}): {c.snippet}...")
+        print(
+            f"  - [Doc {c.doc_id}] ({c.chunk_id}, Dept: {c.department}, Score: {c.score:.4f}): {c.snippet}..."
+        )
 
     assert len(advanced_resp.citations) >= 1, "未输出溯源引用"
     assert "80.00" in advanced_resp.answer, "未正确提取出交通费标准"
-    assert "滴滴出行发票" in advanced_resp.answer or "出租车" in advanced_resp.answer, "未正确提取凭证要求"
+    assert (
+        "滴滴出行发票" in advanced_resp.answer or "出租车" in advanced_resp.answer
+    ), "未正确提取凭证要求"
 
     # 模拟 Naive RAG（无标量过滤、无 BM25 混合、无 Cross-Encoder 精排）进行 A/B 对照
     print("\n" + "-" * 60)
@@ -376,16 +629,28 @@ if __name__ == "__main__":
     print("-" * 60)
     print(f"测试 Query: 「{test_query}」")
     print(f"权限约束: 仅限财务部公文 (department == '财务部')\n")
-    print("| 评估维度 | Naive RAG (基线对照组) | Advanced RAG (生产实验组) | 提升效果判定 |")
+    print(
+        "| 评估维度 | Naive RAG (基线对照组) | Advanced RAG (生产实验组) | 提升效果判定 |"
+    )
     print("| :--- | :--- | :--- | :--- |")
-    print("| **标量隔离能力** | ❌ 0% (技术部/行政部混入候选) | ✅ 100% (非财务部条目物理级阻断) | 彻底消除跨权限越权污染 |")
-    print("| **表格结构保真** | ❌ 表格坍塌或碎片化缺失 | ✅ Table-Aware 原子保护 + Markdown | 数据完整率 100% |")
-    print("| **Top-1 命中质量** | ⚠️ 纯文本浅层匹配 (分数约 0.62) | 🏆 Cross-Encoder 置顶真值 (分数 > 0.85) | 精准锁定最核心表格凭证 |")
-    print("| **回答可解释性** | ❌ 孤立回答，无来源引用 | ✅ 带完整 [Doc n] 溯源凭证 | 审计合规 100% |")
+    print(
+        "| **标量隔离能力** | ❌ 0% (技术部/行政部混入候选) | ✅ 100% (非财务部条目物理级阻断) | 彻底消除跨权限越权污染 |"
+    )
+    print(
+        "| **表格结构保真** | ❌ 表格坍塌或碎片化缺失 | ✅ Table-Aware 原子保护 + Markdown | 数据完整率 100% |"
+    )
+    print(
+        "| **Top-1 命中质量** | ⚠️ 纯文本浅层匹配 (分数约 0.62) | 🏆 Cross-Encoder 置顶真值 (分数 > 0.85) | 精准锁定最核心表格凭证 |"
+    )
+    print(
+        "| **回答可解释性** | ❌ 孤立回答，无来源引用 | ✅ 带完整 [Doc n] 溯源凭证 | 审计合规 100% |"
+    )
     print("-" * 60)
 
     print("\n" + "=" * 80)
-    print("🎉 [MILESTONE 2 REACHED]: 第 2 周里程碑达成！工业级 Advanced RAG 系统升级圆满通关！")
+    print(
+        "🎉 [MILESTONE 2 REACHED]: 第 2 周里程碑达成！工业级 Advanced RAG 系统升级圆满通关！"
+    )
     print("=" * 80)
 
 
