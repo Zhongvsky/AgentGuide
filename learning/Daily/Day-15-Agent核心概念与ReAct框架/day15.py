@@ -25,6 +25,7 @@ from typing import List, Dict, Any, Tuple, Optional, Callable, Type, Union
 from pydantic import BaseModel, Field, ValidationError
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
 
 # Windows 控制台 UTF-8 防御
 if hasattr(sys.stdout, "reconfigure"):
@@ -56,8 +57,8 @@ def get_agent_llm() -> ChatOpenAI:
             openai_api_key=api_key,
             openai_api_base=base_url,
             temperature=0.0,  # Agent 决策必须保证严格确定性
-            max_tokens=1024,
-            timeout=30.0,
+            max_tokens=4096,
+            timeout=60.0,
         )
         print(f"[+] 成功连接 Agent 大模型端点 ({base_url} | 模型: {model_name})！")
         return llm
@@ -130,7 +131,14 @@ class ToolRegistry:
         注册一个新工具到注册表中。
         """
         # TODO 1.1: 请实现工具注册逻辑
-        raise NotImplementedError("【关卡 1.1 待实现】：请实现 ToolRegistry.register！")
+        self.tools[name] = ToolSpec(
+            name=name,
+            description=description,
+            args_schema=args_schema,
+            func=func,
+        )
+
+        # raise NotImplementedError("【关卡 1.1 待实现】：请实现 ToolRegistry.register！")
 
     def get_tools_prompt(self) -> str:
         """
@@ -139,9 +147,25 @@ class ToolRegistry:
         - tool_name: description. Args: {"param1": {"type": "float", "description": "..."}}
         """
         # TODO 1.2: 请实现工具元数据渲染为 Prompt 文本
-        raise NotImplementedError(
-            "【关卡 1.2 待实现】：请实现 ToolRegistry.get_tools_prompt！"
-        )
+        tools_list = []
+        for tool in self.tools.values():
+            properties = tool.args_schema.model_json_schema().get("properties", {})
+            params = {
+                param_name: {
+                    "type": param_info.get("type"),
+                    "description": param_info.get("description"),
+                }
+                for param_name, param_info in properties.items()
+            }
+            tools_list.append(f"{tool.name}: {tool.description}. Args: {params}")
+
+        tools_prompt = "\n".join(tools_list)
+
+        return tools_prompt
+
+        # raise NotImplementedError(
+        #     "【关卡 1.2 待实现】：请实现 ToolRegistry.get_tools_prompt！"
+        # )
 
     def execute(self, tool_name: str, tool_input: Union[Dict[str, Any], str]) -> str:
         """
@@ -152,7 +176,34 @@ class ToolRegistry:
         4. 执行目标函数并捕获所有异常，将结果统一转换为 str 返回。
         """
         # TODO 1.3: 请实现基于 Pydantic 校验的安全工具分发执行
-        raise NotImplementedError("【关卡 1.3 待实现】：请实现 ToolRegistry.execute！")
+
+        try:
+            if tool_name not in self.tools.keys():
+                return f"Error: {tool_name} is not found."
+            else:
+                tool = self.tools.get(tool_name)
+
+            if isinstance(tool_input, str):
+                try:
+                    tool_input = json.loads(tool_input)
+                except json.JSONDecodeError as e:
+                    return f"JSONDecodeError: JSON Decode Failed -> {e}"
+
+            try:
+                args = tool.args_schema(**tool_input)
+            except ValidationError as e:
+                return f"ValidationError: tool.args_schema(**tool_input) Failed -> {e}"
+
+            try:
+                res = tool.func(**args.model_dump())
+            except TypeError as e:
+                return f"TypeError: tool.func(args) Failed -> {e}"
+
+            return str(res)
+        except Exception as e:
+            return f"Unknown Error: {e}"
+
+        # raise NotImplementedError("【关卡 1.3 待实现】：请实现 ToolRegistry.execute！")
 
 
 class ReActParser:
@@ -186,7 +237,37 @@ class ReActParser:
         3. 若都不匹配，抛出 ValueError 或尝试兜底。
         """
         # TODO 2: 请实现 ReActParser 解析逻辑
-        raise NotImplementedError("【关卡 2 待实现】：请实现 ReActParser.parse！")
+
+        assert "Thought:" in llm_output, "'Thought:' not in llm_out"
+
+        if "Final Answer:" in llm_output:
+            split_list = llm_output.split("Final Answer:")
+            thought = split_list[0].replace("Thought:", "").strip()
+            final_answer = split_list[1].strip()
+            return AgentFinish(thought=thought, final_answer=final_answer)
+
+        elif "Action" in llm_output and "Input" in llm_output:
+            action_input = llm_output.split("Action Input:")[1].strip()
+            action = llm_output.split("Action Input:")[0].split("Action:")[1].strip()
+            thought = (
+                llm_output.split("Action Input:")[0]
+                .split("Action:")[0]
+                .replace("Thought:", "")
+                .strip()
+            )
+            if action_input.startswith("```"):
+                lines = action_input.splitlines()
+                if lines[0].startswith("```"):
+                    lines = lines[1:]
+                if lines and lines[-1].startswith("```"):
+                    lines = lines[:-1]
+                action_input = "\n".join(lines)
+            action_input = json.loads(action_input)
+            return AgentAction(
+                thought=thought, tool_name=action, tool_input=action_input
+            )
+        else:
+            raise ValueError(f"无法解析的 LLM 输出格式: {llm_output}")
 
 
 class ReActAgentLoop:
@@ -196,32 +277,61 @@ class ReActAgentLoop:
     """
 
     SYSTEM_PROMPT = """你是一个具备严谨逻辑推理与计算能力的 AI Agent。
-你可以通过交替进行思考（Thought）与行动（Action）来解答用户的复杂多步问题。
+        你可以通过交替进行思考（Thought）与行动（Action）来解答用户的复杂多步问题。
 
-## 可用工具清单：
-{tools_description}
+        ## 可用工具清单：
+        {tools_description}
 
-## 输出协议格式规范：
-每次回复必须严格遵循以下两种格式之一：
+        ## 输出协议格式规范：
+        每次回复必须严格遵循以下两种格式之一：
 
-【格式 1 - 需要调用工具时】：
-Thought: 分析当前已知信息，阐明为什么需要调用该工具，以及下一步计划
-Action: 工具名称（必须严格为上述可用工具清单中的名字之一）
-Action Input: 严格符合工具要求的 JSON 字典，例如 {{"param": 1.0}}
+        【格式 1 - 需要调用工具时】：
+        Thought: 分析当前已知信息，阐明为什么需要调用该工具，以及下一步计划
+        Action: 工具名称（必须严格为上述可用工具清单中的名字之一）
+        Action Input: 严格符合工具要求的 JSON 字典，例如 {{"param": 1.0}}
 
-【格式 2 - 收集完所有必要事实，准备给出最终答案时】：
-Thought: 综合前面所有 Observation 事实，推导最终结论
-Final Answer: 详细、严谨、条理清晰的最终答案
+        【格式 2 - 收集完所有必要事实，准备给出最终答案时】：
+        Thought: 综合前面所有 Observation 事实，推导最终结论
+        Final Answer: 详细、严谨、条理清晰的最终答案
 
-重要约束：
-1. 每次回复只能输出一组 Thought 和 Action/Action Input，或者一组 Thought 和 Final Answer！
-2. 严禁自行编造工具返回的 Observation 内容！
-3. Action Input 必须是合法且能够被 json.loads 解析的 JSON 格式！
-"""
+        重要约束：
+        1. 每次回复只能输出一组 Thought 和 Action/Action Input，或者一组 Thought 和 Final Answer！
+        2. 严禁自行编造工具返回的 Observation 内容！
+        3. Action Input 必须是合法且能够被 json.loads 解析的 JSON 格式！
+        """
 
     def __init__(self, llm: ChatOpenAI, tool_registry: ToolRegistry):
         self.llm = llm
         self.registry = tool_registry
+        self.prompt_example = """你是一个具备严谨逻辑推理与计算能力的 AI Agent。
+            你可以通过交替进行思考（Thought）与行动（Action）来解答用户的复杂多步问题。
+    
+            ## 可用工具清单：
+            {tools_description}
+    
+            ## 输出协议格式规范：
+            每次回复必须严格遵循以下两种格式之一：
+    
+            【格式 1 - 需要调用工具时】：
+            Thought: 分析当前已知信息，阐明为什么需要调用该工具，以及下一步计划
+            Action: 工具名称（必须严格为上述可用工具清单中的名字之一）
+            Action Input: 严格符合工具要求的 JSON 字典，例如 {{"param": 1.0}}
+    
+            【格式 2 - 收集完所有必要事实，准备给出最终答案时】：
+            Thought: 综合前面所有 Observation 事实，推导最终结论
+            Final Answer: 详细、严谨、条理清晰的最终答案
+    
+            ## 重要约束：
+            1. 每次回复只能输出一组 Thought 和 Action/Action Input，或者一组 Thought 和 Final Answer！
+            2. 严禁自行编造工具返回的 Observation 内容！
+            3. Action Input 必须是合法且能够被 json.loads 解析的 JSON 格式！
+            
+            ## 用户问题：
+            {query}
+
+            ## 当前累积的轮次回答：
+            {scratchpad}
+            """
 
     def run(self, query: str, max_iterations: int = 5) -> Dict[str, Any]:
         """
@@ -240,34 +350,86 @@ Final Answer: 详细、严谨、条理清晰的最终答案
         3. 若超出最大循环次数仍未达成 Final Answer，抛出异常或返回兜底响应。
         """
         # TODO 3: 请实现 ReActAgentLoop 循环引擎
-        raise NotImplementedError("【关卡 3 待实现】：请实现 ReActAgentLoop.run！")
+
+        t0 = time.time()
+
+        scratchpad = ""
+        steps = []
+        tools_description = self.registry.get_tools_prompt()
+
+        for step in range(max_iterations):
+
+            prompt = self.prompt_example.format(
+                tools_description=tools_description, query=query, scratchpad=scratchpad
+            )
+
+            llm_out = str(self.llm.invoke(prompt).content).strip()
+
+            llm_out_parse = ReActParser.parse(llm_out)
+
+            if isinstance(llm_out_parse, AgentFinish):
+                t1 = time.time()
+                return {
+                    "final_answer": llm_out_parse.final_answer,
+                    "steps": steps,
+                    "latency_ms": (t1 - t0) * 1000,
+                }
+            elif isinstance(llm_out_parse, AgentAction):
+                observation = self.registry.execute(
+                    llm_out_parse.tool_name, llm_out_parse.tool_input
+                )
+                steps.append(
+                    AgentStep(
+                        step=step + 1,
+                        thought=llm_out_parse.thought,
+                        action=llm_out_parse.tool_name,
+                        action_input=llm_out_parse.tool_input,
+                        observation=observation,
+                    )
+                )
+                scratchpad += (
+                    f"Thought: {llm_out_parse.thought}\n"
+                    f"Action: {llm_out_parse.tool_name}\n"
+                    f"Action Input: {json.dumps(llm_out_parse.tool_input, ensure_ascii=False)}\n"
+                    f"Observation: {observation}\n"
+                )
+
+        raise ValueError(f"超出最大迭代次数: {max_iterations}")
 
 
 # ==========================================
 # 3. 领域实战工具集与 Milestone 验收用例
 # ==========================================
 
+
 # 实战工具 1：计算摄影暗部信噪比计算器
 class NoiseSNRInput(BaseModel):
-    local_variance: float = Field(..., gt=0, description="局部图像暗部方差 sigma^2，必须大于0")
+    local_variance: float = Field(
+        ..., gt=0, description="局部图像暗部方差 sigma^2，必须大于0"
+    )
     mean_intensity: float = Field(..., ge=0, description="局部图像暗部像素均值 mu")
 
 
 def calc_noise_snr_func(local_variance: float, mean_intensity: float) -> str:
     """计算图像信噪比 SNR (dB) = 10 * log10(mu^2 / sigma^2)"""
-    snr_linear = (mean_intensity ** 2) / local_variance
+    snr_linear = (mean_intensity**2) / local_variance
     snr_db = 10.0 * math.log10(snr_linear) if snr_linear > 0 else 0.0
-    return json.dumps({
-        "snr_db": round(snr_db, 2),
-        "mean_intensity": mean_intensity,
-        "local_variance": local_variance,
-        "status": "success",
-    }, ensure_ascii=False)
+    return json.dumps(
+        {
+            "snr_db": round(snr_db, 2),
+            "mean_intensity": mean_intensity,
+            "local_variance": local_variance,
+            "status": "success",
+        },
+        ensure_ascii=False,
+    )
 
 
 # 实战工具 2：ISP 缺陷机理与阈值规章查询器
 class ISPDefectInput(BaseModel):
-    defect_type: str = Field(..., description="缺陷类型，可选: 'Noise', 'Halo', 'ColorCast'")
+    defect_type: str = Field(
+        ..., description="缺陷类型，可选: 'Noise', 'Halo', 'ColorCast'"
+    )
 
 
 def query_isp_defect_func(defect_type: str) -> str:
@@ -321,14 +483,18 @@ if __name__ == "__main__":
         "calc_noise_snr", {"local_variance": 16.0, "mean_intensity": 80.0}
     )
     valid_data = json.loads(valid_res)
-    assert valid_data["snr_db"] == 26.02, f"SNR 计算偏差: 期望 26.02, 实际 {valid_data['snr_db']}"
+    assert (
+        valid_data["snr_db"] == 26.02
+    ), f"SNR 计算偏差: 期望 26.02, 实际 {valid_data['snr_db']}"
     print(f"✅ 关卡 1.2 通过：正常参数执行成功，SNR={valid_data['snr_db']} dB")
 
     # 1.3 异常拦截：方差必须 > 0
     invalid_res = registry.execute(
         "calc_noise_snr", {"local_variance": -5.0, "mean_intensity": 80.0}
     )
-    assert "参数校验失败" in invalid_res or "ValidationError" in invalid_res, "未正确拦截非法参数"
+    assert (
+        "参数校验失败" in invalid_res or "ValidationError" in invalid_res
+    ), "未正确拦截非法参数"
     print("✅ 关卡 1.3 通过：Pydantic 成功拦截非法参数输入！")
 
     # ----------------------------------------------------
@@ -341,11 +507,13 @@ if __name__ == "__main__":
     sample_action_text = (
         "Thought: 用户给出了局部暗部方差和均值，我需要先计算信噪比。\n"
         "Action: calc_noise_snr\n"
-        "Action Input: {\"local_variance\": 16.0, \"mean_intensity\": 80.0}\n"
+        'Action Input: {"local_variance": 16.0, "mean_intensity": 80.0}\n'
     )
     parsed_action = ReActParser.parse(sample_action_text)
     assert isinstance(parsed_action, AgentAction), "未解析为 AgentAction 实例"
-    assert parsed_action.tool_name == "calc_noise_snr", f"工具名解析有误: {parsed_action.tool_name}"
+    assert (
+        parsed_action.tool_name == "calc_noise_snr"
+    ), f"工具名解析有误: {parsed_action.tool_name}"
     assert parsed_action.tool_input["local_variance"] == 16.0, "参数字典解析有误"
     print("✅ 关卡 2.1 通过：成功精准解析 Action 指令与结构化参数字典！")
 
@@ -387,15 +555,23 @@ if __name__ == "__main__":
         print()
 
     print(f"🏆 【Final Answer 最终答案】:\n{result['final_answer']}")
-    print(f"总耗时: {result['latency_ms']:.2f} ms，共经历 {len(result['steps'])} 轮环境交互。")
+    print(
+        f"总耗时: {result['latency_ms']:.2f} ms，共经历 {len(result['steps'])} 轮环境交互。"
+    )
 
     # 验证业务闭环：
     # 30^2 / 16 = 900 / 16 = 56.25 -> 10 * log10(56.25) = 17.50 dB (大于 15dB)
     # 或者如果数值是均值 20，方差 16 -> 400 / 16 = 25 -> 10 * log10(25) = 13.98 dB
     assert len(result["steps"]) >= 2, "Agent 未经历至少两步工具调用闭环"
-    assert "calc_noise_snr" in [s.action for s in result["steps"]], "Agent 未调用计算信噪比工具"
-    assert "query_isp_defect" in [s.action for s in result["steps"]], "Agent 未调用知识库检索工具"
-    assert "final_answer" in result and len(result["final_answer"]) > 20, "未产生有效最终回答"
+    assert "calc_noise_snr" in [
+        s.action for s in result["steps"]
+    ], "Agent 未调用计算信噪比工具"
+    assert "query_isp_defect" in [
+        s.action for s in result["steps"]
+    ], "Agent 未调用知识库检索工具"
+    assert (
+        "final_answer" in result and len(result["final_answer"]) > 20
+    ), "未产生有效最终回答"
 
     print("\n" + "=" * 80)
     print("🎉 [PASSED]: Day 15 关卡全通！ReAct 认知闭环引擎手撕成功！")
