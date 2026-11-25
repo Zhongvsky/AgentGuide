@@ -88,13 +88,28 @@ class HaloOvershootInput(BaseModel):
 # 2. 具备详尽的 Docstring 供 LLM 理解工具使用场景与功能；
 # 3. 计算公式：halo_risk_index = edge_contrast * (sdf_overflow / 10.0)；
 # 4. 返回标准 JSON 字符串（包含 halo_risk_index, is_severe, advice 等字段）。
+
+
+@tool(args_schema=HaloOvershootInput)
 def calc_halo_overshoot(edge_contrast: float, sdf_overflow: float) -> str:
     """
     计算导向滤波 (Fast Guided Filter, FGF) 在高反差边缘引起的光晕 (Halo) 过冲风险指标。
     """
-    raise NotImplementedError(
-        "【关卡 1 待实现】：请使用 @tool 装饰器实现 calc_halo_overshoot！完成后删除本行。"
-    )
+    halo_risk_index = edge_contrast * (sdf_overflow / 10.0)
+    if halo_risk_index >= 2.5:
+        is_severe = True
+        advice = "存在严重光晕过冲风险，建议减小导向滤波半径 r、增大平滑因子 eps 或启用梯度自适应保边引导"
+    else:
+        is_severe = False
+        advice = "光晕在可接受容差范围内，保持当前滤波参数即可"
+
+    res = {
+        "halo_risk_index": halo_risk_index,
+        "is_severe": is_severe,
+        "advice": advice,
+    }
+
+    return json.dumps(res, ensure_ascii=False)
 
 
 # ==========================================
@@ -138,12 +153,22 @@ class ISPExposureGainTool(BaseTool):
     )
     args_schema: Type[BaseModel] = ExposureGainInput
 
-    def _run(
-        self, lux_index: float, iso_value: float, exposure_time_ms: float
-    ) -> str:
-        raise NotImplementedError(
-            "【关卡 2 待实现】：请实现 ISPExposureGainTool._run 方法！完成后删除本行。"
-        )
+    def _run(self, lux_index: float, iso_value: float, exposure_time_ms: float) -> str:
+        try:
+            total_gain = (iso_value / 100.0) * (exposure_time_ms / 10.0)
+            if total_gain > 80.0:
+                strategy = "Open MFNR Super Night"
+            else:
+                strategy = "Retain Current Single-Frame Denoise and Sharpness"
+            return json.dumps(
+                {
+                    "total_gain": total_gain,
+                    "strategy": strategy,
+                },
+                ensure_ascii=False,
+            )
+        except Exception as e:
+            return custom_exposure_error_handler(e)
 
 
 # ==========================================
@@ -176,9 +201,58 @@ def run_native_tool_agent(
     5. 返回包含 final_answer, tool_call_history, total_steps 的字典。
     """
     # TODO 3: 请实现原生 Tool Calling 分发与回传循环
-    raise NotImplementedError(
-        "【关卡 3 待实现】：请实现 run_native_tool_agent！完成后删除本行。"
-    )
+    try:
+        llm_with_tools = llm.bind_tools(tools)
+        messages = [
+            SystemMessage("你是一名专业的相机画质和ISP专家，为用户解答问题。"),
+            HumanMessage(query),
+        ]
+        tool_map = {t.name: t for t in tools}
+
+        tool_call_history = []
+        final_answer = f"Not get the final answer yet within {max_steps} steps"
+        for step in range(max_steps):
+            response = llm_with_tools.invoke(messages)  # Return AIMessage
+            messages.append(response)
+
+            if not response.tool_calls:
+                final_answer = response.content
+                break
+            else:
+                for tool_call in response.tool_calls:
+                    tool_id = tool_call["id"]
+                    tool_name = tool_call["name"]
+                    tool_args = tool_call["args"]
+
+                    if tool_name in tool_map:
+                        try:
+                            tool_output = tool_map[tool_name].invoke(tool_args)
+                        except Exception as e:
+                            tool_output = f"Tool execution error: {e}"
+                    else:
+                        tool_output = f"Not found tool: {tool_name} in tools list"
+                    messages.append(
+                        ToolMessage(
+                            content=tool_output,
+                            tool_call_id=tool_id,
+                        )
+                    )
+                    tool_call_history.append(
+                        {
+                            "id": tool_id,
+                            "name": tool_name,
+                            "args": tool_args,
+                            "output": tool_output,
+                        }
+                    )
+        return {
+            "final_answer": final_answer,
+            "tool_call_history": tool_call_history,
+            "total_steps": step + 1,
+        }
+
+    except Exception as e:
+        raise
 
 
 # ==========================================
@@ -201,9 +275,7 @@ if __name__ == "__main__":
     ), f"工具名称不匹配: {calc_halo_overshoot.name}"
 
     # 1.1 正常参数调用
-    res1_str = calc_halo_overshoot.invoke(
-        {"edge_contrast": 2.5, "sdf_overflow": 12.0}
-    )
+    res1_str = calc_halo_overshoot.invoke({"edge_contrast": 2.5, "sdf_overflow": 12.0})
     res1 = json.loads(res1_str)
     assert res1["halo_risk_index"] == 3.0, f"计算结果偏差: {res1}"
     assert res1["is_severe"] is True, "未正确判定高危光晕"
@@ -211,9 +283,7 @@ if __name__ == "__main__":
 
     # 1.2 非法参数拦截（负对比度）
     try:
-        calc_halo_overshoot.invoke(
-            {"edge_contrast": -1.0, "sdf_overflow": 12.0}
-        )
+        calc_halo_overshoot.invoke({"edge_contrast": -1.0, "sdf_overflow": 12.0})
         print("❌ 关卡 1.2 失败：未能拦截非法入参！")
         assert False
     except ValidationError:
@@ -295,12 +365,8 @@ if __name__ == "__main__":
         len(agent_result["tool_call_history"]) >= 2
     ), "Agent 未经历至少两个原生工具调用"
     tool_names = [call["name"] for call in agent_result["tool_call_history"]]
-    assert (
-        "calc_halo_overshoot" in tool_names
-    ), "Agent 遗漏光晕过冲计算工具调用"
-    assert (
-        "isp_exposure_gain_eval" in tool_names
-    ), "Agent 遗漏曝光增益评估工具调用"
+    assert "calc_halo_overshoot" in tool_names, "Agent 遗漏光晕过冲计算工具调用"
+    assert "isp_exposure_gain_eval" in tool_names, "Agent 遗漏曝光增益评估工具调用"
     assert (
         "final_answer" in agent_result and len(agent_result["final_answer"]) > 50
     ), "最终诊断报告内容不充实"

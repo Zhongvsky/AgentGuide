@@ -11,10 +11,10 @@
 
 ## 当前状态
 
-- **next_day**: 17（下一个待下发的学习日）
+- **next_day**: 18（下一个待下发的学习日）
 - **next_day 锁定**: 否（设为「是」时忽略自动推进，用于暂停或跳级）
-- **已下发学习日数**: 16
-- **已完成学习日数**: 15（Day 1-15，Agent 核心概念与 ReAct 框架手撕实战圆满闭环，第 3 周启航大捷）
+- **已下发学习日数**: 17
+- **已完成学习日数**: 16（Day 1-16，自定义工具封装与原生 Tool Calling 闭环全通）
 - **连续未完成**: 0
 - **待下发草稿**: 无
 - **路线图**: learning/learning-roadmap.md
@@ -41,7 +41,8 @@
 | 13 | 2026-11-23 周一 | 高级数据处理与复杂PDF解析 | ①表格单元格矩阵还原为标准Markdown ②双栏阅读顺序重构与公文噪音清洗 ③表格感知语义分块管线 | 已完成 | 手撕二维单元格网格还原为 GFM Markdown、双栏几何阅读序重构与页眉页脚 8% 几何裁剪、以及表格感知原子分块（章节上下文前缀注入）；攻克 0-indexed 下标越界、Python 闭包 nonlocal 作用域及 Pydantic v2 强类型契约校验三大实战暗坑；三大关卡全量通过验证 |
 | 14 | 2026-11-23 周一 | 周度总结与Advanced RAG系统大升级 | ①全链路管线集成（混合检索+重排+Milvus+版面分块） ②端到端问答与溯源验证 ③A/B 对照 Naive vs Advanced 综合性能指标 | 已完成 | 手撕 Modular Advanced RAG 四层拓扑（Milvus 标量前置过滤 + BM25 词频倒排 + RRF 无量纲初筛 + Cross-Encoder 单塔全交叉精排 + 带引用端到端合成）；攻克 Milvus 检索向量二维契约、集合幂等重置、output_fields 标量映射及 Hash Map 倒数排名融合；实测验证 Cross-Encoder 以 0.9885 极高置信度置顶表格真值，A/B 对照全方位压制 Naive RAG，第 2 周里程碑圆满收官 |
 | 15 | 2026-11-24 周二 | Agent 核心概念与 ReAct 框架 | ①ToolRegistry 强类型工具注册与校验 ②ReActParser 状态机解析 ③端到端 Agent 多步推理与工具调用闭环 | 已完成 | 手撕 ToolRegistry 强类型工具注册表（Pydantic Schema 自动化与异常拦截）、ReActParser 状态机文本解析器（优先捕获 Final Answer 与 JSON 容错清洗）、ReActAgentLoop 核心循环引擎；攻克 AIMessage 序列化拖尾导致 Extra data 缺陷与推理大模型 reasoning_tokens 配额击穿两大工业级暗坑；实测端到端两轮工具调用（计算 SNR=17.5dB + ISP 缺陷规程匹配）输出严谨诊断建议，三道关卡全绿灯通过！ |
-| 16 | 2026-11-25 周三 | 自定义工具开发与 Tool Calling | ①@tool 装饰器轻量级封装 ②继承 BaseTool 深度定制与异常自愈 ③原生 Tool Calling 端到端闭环 | 待打卡 | — |
+| 16 | 2026-11-25 周三 | 自定义工具开发与 Tool Calling | ①@tool 装饰器轻量级封装 ②继承 BaseTool 深度定制与异常自愈 ③原生 Tool Calling 端到端闭环 | 已完成 | 手撕 `@tool`（`calc_halo_overshoot`）与继承 `BaseTool`（`ISPExposureGainTool`）双模式强类型工具，并实现 `run_native_tool_agent` 原生并发调度引擎；排查并修复 `ToolMessage(tool_call_id=...)` 参数名、`tool_call_history` 键名对齐及 `raise` 字符串异常；连接本地端点（`auto/hy4flash-free`）2 轮交互完成并发双工具调用（`total_gain=160.0` + `halo_risk_index=4.5`）并输出完整 ISP 调试优化诊断书，三大关卡全绿灯通关！ |
+| 17 | 2026-11-30 周一 | SQL & 数据库工具 | ①SQLite Schema 自动探查 ②只读安全 SQL 执行器（防注入与自愈） ③端到端 Text-to-SQL Agent 闭环 | 待打卡 | — |
 
 ## 周度里程碑（按学习日，3 天/周节奏）
 
@@ -67,6 +68,8 @@
 
 - 连续 3 个学习日未完成时，需考虑把 next_day 回退 1-2 天巩固，而不是继续往前推
 - 当前欠账：**0 天**（首周 7 天、第 2 周进阶篇 7 天全部收官闭环；第 2 周里程碑圆满达成）。
+- **2026-11-25（周三）**：Day 16「自定义工具开发与 Tool Calling 原生协议实战」圆满收官！手撕 `@tool` 装饰器封装、`BaseTool` 强类型类定制与 `run_native_tool_agent` 原生 Tool Calling 分发闭环；实测修复 `ToolMessage.tool_call_id` 命名、历史字段契约及异常兜底边界，2 轮交互并发触发 `isp_exposure_gain_eval`（`total_gain=160.0`）与 `calc_halo_overshoot`（`halo_risk_index=4.5`），耗时 `12835.64 ms` 输出完整夜景高反差 ISP 诊断报告。已完成 15→16，连续未完成维持 0，next_day 维持 17。代码与复盘笔记 `Gemini-Study.md` 已归档。
+- **2026-11-25 23:13 预下发 Day 17（周一 2026-11-30 学习日）**：用户确认预下发，按新确立的「零剧透纯契约铁律」（`learning/AGENTS.md`）新建 `Day-17-SQL与数据库工具.md` 与 `learning/Daily/Day-17-SQL与数据库工具/day17.py` 纯契约骨架。next_day 17→18，已下发 16→17，已完成维持 16，连续未完成 0。挂载 `mkdocs.yml`，全自动同步 GitHub Pages。
 - **2026-11-24 20:30 预下发 Day 16（周三 2026-11-25 学习日）**：用户确认预下发，新建 `Day-16-自定义工具开发与ToolCalling.md`，初始化 `learning/Daily/Day-16-自定义工具开发与ToolCalling/day16.py` 闯关骨架。next_day 16→17，已下发 15→16，已完成维持 15，连续未完成 0。挂载 `mkdocs.yml`，全自动同步 GitHub Pages。
 - **2026-11-24（周二，第 3 周启航大捷）**：Day 15「Agent 核心概念与 ReAct 框架手撕实战」圆满收官！手撕三大核心模块（ToolRegistry 强类型工具注册表与 Pydantic 防御执行、ReActParser 正则状态机解析器、ReActAgentLoop 多步动态 Scratchpad 上下文闭环引擎）。敏锐排查并攻克 LangChain invoke 返回 AIMessage 导致字符串反序列化拖尾 extra data、以及深度推理模型 reasoning_tokens 预算击穿导致输出空文本两大实战暗坑；连接真实大模型（auto/hy4flash-free）端到端完成两轮自主工具调用（数学计算 SNR=17.5dB + ISP 噪声缺陷规章检索），精准输出高质量诊断评级与修复建议，三道关卡全绿灯通过！已完成 14→15，连续未完成维持 0，next_day 维持 16。代码与深度复盘笔记 `Gemini-Study.md` 已全量归档。
 - **2026-11-23 00:08 预下发 Day 15（周二 2026-11-24 学习日，第 3 周启航）**：用户确认预下发，新建 `Day-15-Agent核心概念与ReAct框架.md`，初始化 `learning/Daily/Day-15-Agent核心概念与ReAct框架/day15.py` 闯关骨架。next_day 15→16，已下发 14→15，已完成维持 14，连续未完成 0。挂载 `mkdocs.yml`，全自动同步 GitHub Pages。
