@@ -19,12 +19,12 @@ import json
 import sqlite3
 import time
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Type
 
 from pydantic import BaseModel, Field
-from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langchain_openai import ChatOpenAI
+from langchain_core.tools import tool, BaseTool
 
 # Windows 控制台 UTF-8 防御
 if hasattr(sys.stdout, "reconfigure"):
@@ -72,8 +72,7 @@ def init_isp_sqlite_db(db_path: str) -> None:
     cur.execute("DROP TABLE IF EXISTS badcase_records")
     cur.execute("DROP TABLE IF EXISTS isp_configs")
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE isp_configs (
             config_id INTEGER PRIMARY KEY,
             chip_platform TEXT NOT NULL,
@@ -82,11 +81,9 @@ def init_isp_sqlite_db(db_path: str) -> None:
             param_value REAL NOT NULL,
             version TEXT NOT NULL
         )
-        """
-    )
+        """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE badcase_records (
             case_id INTEGER PRIMARY KEY,
             config_id INTEGER NOT NULL,
@@ -98,8 +95,7 @@ def init_isp_sqlite_db(db_path: str) -> None:
             created_at TEXT NOT NULL,
             FOREIGN KEY (config_id) REFERENCES isp_configs(config_id)
         )
-        """
-    )
+        """)
 
     configs = [
         (1, "SA8155", "FGF", "guide_radius", 8.0, "v2.1"),
@@ -116,10 +112,21 @@ def init_isp_sqlite_db(db_path: str) -> None:
         (104, 3, "暗光运动抓拍", "Ghosting", 0.8, 180.0, "MEDIUM", "2026-11-23"),
         (105, 4, "强光高光场景", "ColorCast", 1.1, 20.0, "LOW", "2026-11-24"),
     ]
-    cur.executemany("INSERT INTO badcase_records VALUES (?, ?, ?, ?, ?, ?, ?, ?)", badcases)
+    cur.executemany(
+        "INSERT INTO badcase_records VALUES (?, ?, ?, ?, ?, ?, ?, ?)", badcases
+    )
 
     conn.commit()
     conn.close()
+
+
+class SQLInspectInput(BaseModel):
+    pass
+
+
+class SQLExecuteInput(BaseModel):
+    sql: str = Field(..., description="The SQL Order")
+    max_rows: int = Field(..., description="The Max rows of SQL res")
 
 
 # ==========================================
@@ -140,9 +147,17 @@ def inspect_sqlite_schema(db_path: str) -> str:
     - 不得暴露或依赖内部系统表（如 sqlite_sequence）。
     """
     # TODO 1: 实现 SQLite Schema 探查
-    raise NotImplementedError(
-        "【关卡 1 待实现】：请实现 inspect_sqlite_schema！完成后删除本行。"
-    )
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    # 直接从 sqlite_master 查出所有表的 sql 建表语句
+    cur.execute("""
+        SELECT sql FROM sqlite_master 
+        WHERE type='table' AND name NOT LIKE 'sqlite_%';
+    """)
+    ddls = [row[0] for row in cur.fetchall() if row[0]]
+    conn.close()
+    # 拼成一段完整的 DDL 文本
+    return "\n\n".join(ddls)
 
 
 # ==========================================
@@ -150,9 +165,7 @@ def inspect_sqlite_schema(db_path: str) -> str:
 # ==========================================
 
 
-def execute_safe_readonly_sql(
-    db_path: str, sql: str, max_rows: int = 50
-) -> str:
+def execute_safe_readonly_sql(db_path: str, sql: str, max_rows: int = 50) -> str:
     """
     【关卡 2 契约】：在只读安全约束下执行 SQL 查询并返回结构化 JSON 字符串。
 
@@ -175,14 +188,101 @@ def execute_safe_readonly_sql(
     - "error": str | None（成功时为 None；失败或被拦截时为清晰的错误原因说明）
     """
     # TODO 2: 实现只读安全 SQL 执行器
-    raise NotImplementedError(
-        "【关卡 2 待实现】：请实现 execute_safe_readonly_sql！完成后删除本行。"
-    )
+
+    error = None
+    res = {}
+
+    # 0. 多语句和高危语句拦截
+    upper_sql = sql.strip().rstrip(";").upper()
+
+    if ";" in upper_sql:
+        return json.dumps(
+            {
+                "ok": False,
+                "rows": [],
+                "row_count": 0,
+                "error": f'There exist multiple orders in "{sql}".',
+            }
+        )
+
+    if not (upper_sql.startswith("SELECT") or upper_sql.startswith("WITH")):
+        return json.dumps(
+            {
+                "ok": False,
+                "rows": [],
+                "row_count": 0,
+                "error": "Only SELECT or WITH statements are allowed.",
+            }
+        )
+
+    # 1. 打开数据库
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    cur = conn.cursor()
+
+    try:
+        # 2. 执行 SELECT 语句
+        cur.execute(sql)
+        # 3. 拿到查询出来的所有列名
+        # cur.description 返回每列元信息，col[0] 就是列名
+        columns = [
+            col[0] for col in cur.description
+        ]  # ['config_id', 'chip_platform', 'param_value']
+        # 4. 获取所有行数据
+        rows = cur.fetchmany(
+            max_rows
+        )  # [(1, 'Qualcomm_8Gen3', 1.25), (2, 'MediaTek_9300', 0.8)]
+        # 5. 把列名和每行数据 zip 拼成字典列表（结构化数据）
+        results = [dict(zip(columns, row)) for row in rows]
+        conn.close()
+
+        return json.dumps(
+            {
+                "ok": True,
+                "rows": results,
+                "row_count": len(rows),
+                "error": None,
+            }
+        )
+    except Exception as e:
+        return json.dumps(
+            {
+                "ok": False,
+                "rows": [],
+                "row_count": 0,
+                "error": str(e),
+            }
+        )
 
 
 # ==========================================
 # 3. 关卡 3：端到端 Text-to-SQL Agent 闭环
 # ==========================================
+
+
+class InspectSQLSchemaTool(BaseTool):
+    name: str = "inspect_sqlite_schema"
+    description: str = "查指定 SQLite 数据库的表结构"
+    args_schema: Type[BaseModel] = SQLInspectInput
+    db_path: str
+
+    def _run(self) -> str:
+        try:
+            return inspect_sqlite_schema(self.db_path)
+        except Exception as e:
+            return str(e)
+
+
+class ExecuteSQLSafeROTool(BaseTool):
+    name: str = "execute_safe_readonly_sql"
+    description: str = "在只读安全约束下执行 SQL 查询并返回结构化 JSON 字符串"
+    args_schema: Type[BaseModel] = SQLExecuteInput
+    db_path: str
+
+    def _run(self, sql: str, max_rows: int) -> str:
+        try:
+            return execute_safe_readonly_sql(self.db_path, sql, max_rows)
+        except Exception as e:
+            return str(e)
 
 
 def run_sql_agent(
@@ -211,9 +311,49 @@ def run_sql_agent(
     - "total_steps": int（实际经历的模型交互轮数）
     """
     # TODO 3: 实现端到端 Text-to-SQL Agent
-    raise NotImplementedError(
-        "【关卡 3 待实现】：请实现 run_sql_agent！完成后删除本行。"
-    )
+    tools = [
+        InspectSQLSchemaTool(db_path=db_path),
+        ExecuteSQLSafeROTool(db_path=db_path),
+    ]
+    llm_with_tools = llm.bind_tools(tools)
+    messages = [SystemMessage("你是一位SQL专家"), HumanMessage(question)]
+    tool_map = {t.name: t for t in tools}
+
+    final_answer = f"Not get the final answer yet within {max_steps} steps"
+    executed_sqls = []
+
+    for step in range(max_steps):
+        response = llm_with_tools.invoke(messages)
+        messages.append(response)
+        if not response.tool_calls:
+            final_answer = response.content
+            break
+        else:
+            for tool_call in response.tool_calls:
+                tool_id = tool_call["id"]
+                tool_name = tool_call["name"]
+                tool_args = tool_call["args"]
+
+                if tool_name in tool_map:
+                    try:
+                        tool_output = tool_map[tool_name].invoke(tool_args)
+                        if tool_name == "execute_safe_readonly_sql":
+                            executed_sqls.append(tool_args["sql"])
+                    except Exception as e:
+                        tool_output = f"Tool execution error: {e}"
+                else:
+                    tool_output = f"Not found tool: {tool_name} in tools list"
+                messages.append(
+                    ToolMessage(
+                        content=tool_output,
+                        tool_call_id=tool_id,
+                    )
+                )
+    return {
+        "final_answer": final_answer,
+        "executed_sqls": executed_sqls,
+        "total_steps": step + 1,
+    }
 
 
 # ==========================================
@@ -282,7 +422,9 @@ if __name__ == "__main__":
         execute_safe_readonly_sql(DB_PATH, "SELECT non_existent_col FROM isp_configs")
     )
     assert syntax_err_res["ok"] is False and syntax_err_res["error"]
-    print(f"✅ 关卡 2.3 通过：SQL 语法/字段报错未崩溃，已转为可读诊断：{syntax_err_res['error']}")
+    print(
+        f"✅ 关卡 2.3 通过：SQL 语法/字段报错未崩溃，已转为可读诊断：{syntax_err_res['error']}"
+    )
 
     # ----------------------------------------------------
     # 测试关卡 3：端到端 Text-to-SQL Agent 实测
@@ -298,14 +440,18 @@ if __name__ == "__main__":
     )
 
     t0 = time.time()
-    agent_res = run_sql_agent(llm=llm, db_path=DB_PATH, question=test_question, max_steps=6)
+    agent_res = run_sql_agent(
+        llm=llm, db_path=DB_PATH, question=test_question, max_steps=6
+    )
     t1 = time.time()
 
     print(f"\n📜 【Agent 执行过的 SQL】:")
     for i, s in enumerate(agent_res["executed_sqls"], 1):
         print(f"  {i}. {s}")
     print(f"\n🏆 【Agent 最终回答】:\n{agent_res['final_answer']}")
-    print(f"\n总耗时: {(t1 - t0) * 1000:.2f} ms，共经历 {agent_res['total_steps']} 轮交互。")
+    print(
+        f"\n总耗时: {(t1 - t0) * 1000:.2f} ms，共经历 {agent_res['total_steps']} 轮交互。"
+    )
 
     assert len(agent_res["executed_sqls"]) >= 1, "Agent 未执行任何 SQL 查询"
     ans = agent_res["final_answer"]
