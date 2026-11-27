@@ -1,7 +1,7 @@
 # 🤖 AI Agent 开发工程师 · 60 天工程实战
 
 > **面向生产环境的 AI Agent & Advanced RAG 进阶之旅**  
-> 坚持“白天心智预演（手机/网页预读）+ 晚上手撕收网（本地编码真机实测）”的黄金学习范式。
+> 坚持“**白天心智预演（概念理解 + Schema/架构设计）+ 晚上 2 小时夜间里程碑（~90 分钟零阻力纯编码与真机验收）**”的黄金学习范式。
 
 ---
 
@@ -9,27 +9,26 @@
 
 ```mermaid
 flowchart LR
-    A["📱 白天零碎时间<br/>(手机/公司网页)"] -->|"输入与预热"| B["理解核心原理<br/>看懂输入输出契约<br/>构思实现思路"]
-    B --> C["💻 晚上回到家<br/>(本地开发环境)"]
-    C -->|"阻断式手撕"| D["打开 dayNN.py<br/>突破关卡 1~6<br/>uv run 跑通验证"]
+    A["📱 白天零碎时间<br/>(手机/公司网页)"] -->|"预习与设计"| B["读懂核心原理<br/>对齐 I/O 与 Schema 契约<br/>完成脑内架构推演"]
+    B --> C["💻 晚上回到家<br/>(约 2 小时窗口)"]
+    C -->|"~90分钟纯编码"| D["打开 dayNN.py<br/>攻克 2–3 个紧凑关卡<br/>uv run 跑通验收"]
 ```
 
-- **白天摸鱼 / 通勤（15~20 分钟）**：阅读当天的【学习任务卡】，搞清楚核心痛点（Why）、技术演进（What）、输入输出契约与架构图，在潜意识里完成构思。
-- **晚上到家（30~45 分钟）**：无需在疲惫时啃长篇大论，直接运行 `uv run python learning/Daily/Day-NN-xxx/dayNN.py`，顺着 TODO 关卡一步步手撕实现并跑通测试。
+- **白天摸鱼 / 通勤（15~25 分钟）**：阅读当天的【学习任务卡】，提前完成概念理解与 Schema/架构设计（周末提前备好所需 ISP 文档或测试图片）。
+- **晚上到家（约 2 小时，有效编码+调试 ~90 分钟）**：无需临时啃文档或重装重型环境，直接运行 `uv run python learning/Daily/Day-NN-xxx/dayNN.py`，只攻克 **1 个单一、可验证的闭环模块**。
 
 ---
 
 ## 🗺️ 阶段全景路线图
 
-| 周次 | 阶段主题 | 核心内容 | 阶段产出 |
-| :--- | :--- | :--- | :--- |
-| **第 1 周** | 大模型应用开发基础 + Naive RAG | FastAPI、LangChain、FAISS、端到端接口 | ✅ Naive RAG Docker 容器化闭环 |
-| **第 2 周** | Advanced RAG 与生产级向量库 | Query 改写 (HyDE/Multi-Query)、混合检索、RAGAs 评估、Milvus | 🚀 工业级高精度检索升级 |
-| **第 3 周** | Agent 开发与 Tool Calling | ReAct 闭环、自定义工具、Function Calling、Memory、容错降级 | 🤖 “研究助手”智能 Agent |
-| **第 4 周** | 系统性能优化与高并发 | Redis 缓存、异步并发 (Async)、批处理、vLLM 高性能推理 | ⚡ 压测与 P99 延迟报告 |
-| **第 5 周** | 监控、可观测性与生产部署 | LangSmith 链路追踪、Prometheus 指标、Grafana 大盘、Compose | 📊 生产级可观测性监控大盘 |
-| **第 6 周** | Multi-Agent 多智能体协同 | AutoGen、CrewAI 框架实战与多角色协同 | 👥 自动化投研多 Agent 团队 |
-| **第 7-8 周** | 工业级项目实战与面试冲刺 | ISP 故障排查专家 RAG、画质自动诊断 Agent 实战、简历量化与 Mock 面试 | 🏆 2套专属护城河代表作 |
+| 周次 | 学习日范围 | 阶段主题 | 核心内容 | 阶段产出 |
+| :--- | :--- | :--- | :--- | :--- |
+| **第 1 周** | Day 1–7 | 大模型应用开发基础 + Naive RAG | FastAPI、LangChain LCEL、FAISS、端到端接口 | ✅ Naive RAG Docker 容器化闭环 |
+| **第 2 周** | Day 8–14 | Advanced RAG 与生产级向量库 | Query 改写 (HyDE/Multi-Query)、混合检索、RAGAs、Milvus | ✅ 工业级高精度检索升级 |
+| **第 3 周** | Day 15–21 | Agent 开发、Context Engineering 与 MCP | ReAct、Tool Calling、Text-to-SQL、Function Calling、上下文工程、熔断护栏、MCP | 🤖 「ISP 研究助手」+ 最小 MCP Server |
+| **第 4–5 周** | Day 22–29（8 晚） | 工程性能、流式交互、可观测与部署 | cProfile、Prompt Caching + Redis、Async/SSE、Batching、Langfuse Cloud + Prometheus + structlog、Compose + Locust | ⚡ Docker Compose 全栈 + Locust QPS/P99 报告 |
+| **第 6 周** | Day 30–37（8 晚） | LangGraph + VLM 多模态 + Agent Eval | LangGraph（路由/ToolNode/HITL/Subgraph）、VLM初筛+算子复核（MCP）、Golden Dataset + 离线评测 | 🧠 可中断多模态诊断编排与离线 Eval 基线 |
+| **第 7–8 周** | Day 38–60（23 晚） | 工业级项目实战与面试冲刺 | 项目一（8晚：ISP 专家 RAG）、项目二（11晚：画质自动诊断 Agent）、简历量化 + 架构图 + 系统设计 + Mock（4晚） | 🏆 2 套专属计算摄影×AI 护城河代表作 |
 
 ---
 
@@ -37,4 +36,4 @@ flowchart LR
 
 - 📋 [**60 天完整落地路线图**](learning-roadmap.md)
 - 📈 [**学习进度追踪与打卡表**](learning-progress.md)
-- 🗂️ [**今日任务卡 (Day 08)**](learning-cards/Day-08-QueryTransformation.md)
+- 🗂️ [**今日任务卡 (Day 18)**](learning-cards/Day-18-FunctionCalling实战.md)

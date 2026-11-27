@@ -33,16 +33,16 @@
 
 ---
 
-## 四、 时间规划建议（约 2~2.5 小时）
+## 四、 时间规划建议（约 2 小时，有效编码 ~90 分钟）
 
-- **原理理解（30% · 40 分钟）**：
+- **白天预习（15~25 分钟）**：
   - 对比 `Prompt 要求输出 JSON` vs `Structured Outputs / Function Calling` 在 Schema 约束力与容错率上的本质差异；
   - 厘清原生 OpenAI Chat Completions 协议中 `assistant.tool_calls` 与 `role: "tool"` + `tool_call_id` 的请求/响应报文字段。
-- **代码动手（50% · 65 分钟）**：
+- **夜间实操（有效编码+调试 ~90 分钟）**：
   - 【关卡 1】：实现 `extract_isp_bug_ticket`，从非结构化文本抽取强类型 `ISPBugTicket`；
   - 【关卡 2】：实现 `run_native_openai_fc`，使用原生 `openai.OpenAI` SDK 完成多工具调度闭环；
-  - 【关卡 3】：实现 `run_isp_triage_pipeline`，串联结构化抽取与工具分诊闭环。
-- **实测对比与复盘（20% · 25 分钟）**：
+  - 【关卡 3】：实现 `run_isp_triage_pipeline`，串联结构化抽取与工具分诊闭环（若调试超时，可将关卡 3 顺延至次日 30min 收尾，严控夜间节奏）。
+- **收尾与验收（15 分钟）**：
   - 运行 `uv run python learning/Daily/Day-18-FunctionCalling实战/day18.py`；
   - 复盘原生 SDK 报文格式与框架封装之间的映射关系。
 
@@ -73,6 +73,6 @@ uv run python learning/Daily/Day-18-FunctionCalling实战/day18.py
 
 ## 七、 周度里程碑倒计时
 
-- **第 3 周里程碑**：构建集成 RAG + Web 搜索的「ISP 算法与代码研究助手」Agent（Day 21）；
+- **第 3 周里程碑**：搭建「ISP 研究助手」，并将 1 个本地查询工具封装为最小可运行 **MCP Server** 跑通调用（Day 21）；
 - **距离本周里程碑日还差**：**3 个学习日**；
-- **后续节奏**：Day 18 夯实 Function Calling 与结构化抽取后，Day 19 将进入 Agent Memory（对话记忆与持久化）。
+- **后续节奏**：Day 18 夯实 Function Calling 与结构化抽取后，Day 19 将升级为 **Context Engineering 与记忆**（上下文窗口裁剪/摘要、大工具输出截断与轻量会话持久化，跳过旧版 `LangChain Memory`）。

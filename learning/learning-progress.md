@@ -19,7 +19,7 @@
 - **待下发草稿**: 无
 - **路线图**: learning/learning-roadmap.md
 - **任务卡目录**: learning/learning-cards/
-- **当前阶段**: 第 3 周 · Agent 开发与 Tool Calling
+- **当前阶段**: 第 3 周 · Agent 开发、Context Engineering 与 MCP（Day 18–60 已重构为 43 个 2 小时夜间里程碑单元）
 
 ## 打卡记录
 
@@ -43,7 +43,7 @@
 | 15 | 2026-11-24 周二 | Agent 核心概念与 ReAct 框架 | ①ToolRegistry 强类型工具注册与校验 ②ReActParser 状态机解析 ③端到端 Agent 多步推理与工具调用闭环 | 已完成 | 手撕 ToolRegistry 强类型工具注册表（Pydantic Schema 自动化与异常拦截）、ReActParser 状态机文本解析器（优先捕获 Final Answer 与 JSON 容错清洗）、ReActAgentLoop 核心循环引擎；攻克 AIMessage 序列化拖尾导致 Extra data 缺陷与推理大模型 reasoning_tokens 配额击穿两大工业级暗坑；实测端到端两轮工具调用（计算 SNR=17.5dB + ISP 缺陷规程匹配）输出严谨诊断建议，三道关卡全绿灯通过！ |
 | 16 | 2026-11-25 周三 | 自定义工具开发与 Tool Calling | ①@tool 装饰器轻量级封装 ②继承 BaseTool 深度定制与异常自愈 ③原生 Tool Calling 端到端闭环 | 已完成 | 手撕 `@tool`（`calc_halo_overshoot`）与继承 `BaseTool`（`ISPExposureGainTool`）双模式强类型工具，并实现 `run_native_tool_agent` 原生并发调度引擎；排查并修复 `ToolMessage(tool_call_id=...)` 参数名、`tool_call_history` 键名对齐及 `raise` 字符串异常；连接本地端点（`auto/hy4flash-free`）2 轮交互完成并发双工具调用（`total_gain=160.0` + `halo_risk_index=4.5`）并输出完整 ISP 调试优化诊断书，三大关卡全绿灯通关！ |
 | 17 | 2026-11-30 周一 | SQL & 数据库工具 | ①SQLite Schema 自动探查 ②只读安全 SQL 执行器（防注入与自愈） ③端到端 Text-to-SQL Agent 闭环 | 已完成 | 手撕 `sqlite_master` DDL 探查、词法+`mode=ro` 双保险只读执行器、以及 `BaseTool` 私有字段（`self.db_path`）与 `args_schema` 解耦的原生 Tool Calling Agent；攻克末尾分号误杀、`not A or B` 优先级、异常 JSON 序列化及 `db_path` 暴露给 LLM 导致死循环四大暗坑；4 轮交互（12877.52 ms）自主完成值域探查与多表 `JOIN` 精准输出 `SA8155`/`FGF`/`v2.1` 诊断表，全绿灯通关！ |
-| 18 | 2026-12-01 周二 | Function Calling 实战 | ①Pydantic 结构化信息抽取 ②原生 OpenAI Function Calling 闭环 ③结构化抽取+工具分诊流水线 | 待打卡 | — |
+| 18 | 2026-12-01 周二 | Function Calling 实战 | ①Strict Schema 抽取 `ISPBugTicket` ②原生 `tool_calls` 循环与分发表 ③两段式分诊（超时可顺延至次日 30min 收尾） | 待打卡 | — |
 
 ## 周度里程碑（按学习日，3 天/周节奏）
 
@@ -51,11 +51,12 @@
 |---|---|---|---|
 | 第 1 周收尾 | Day 7 | 2026-11-04 周三 | Naive RAG 项目 Docker 化跑通 |
 | 第 2 周收尾 | Day 14 | 2026-11-23 周一 | 混合检索 + Reranker + Milvus 升级完成 |
-| 第 3 周收尾 | Day 21 | 2026-12-08 周二 | 研究助手 Agent 完成 |
-| 第 4 周收尾 | Day 28 | 2026-12-23 周三 | 压测报告（QPS / P99） |
-| 第 5 周收尾 | Day 35 | 2027-01-11 周一 | 整套系统 Compose 一键部署 |
-| 第 6 周收尾 | Day 42 | 2027-01-26 周二 | AutoGen + CrewAI 双框架跑通 |
-| 全周期收尾 | Day 60 | 2027-03-09 周二 | 两个项目 + 简历 + 模拟面试 |
+| 第 3 周收尾 | Day 21 | 2026-12-08 周二 | ISP 研究助手 + 最小可运行 MCP Server 跑通 |
+| 第 4–5 周收尾 | Day 29 | 2026-12-28 周一 | Docker Compose 全栈（FastAPI + Redis + Milvus）+ Locust QPS/P99 基准报告 |
+| 第 6 周收尾 | Day 37 | 2027-01-13 周三 | LangGraph 编排 + VLM/算子 MCP 协同 + Agent Eval 离线基线 |
+| 项目一收尾 | Day 45 | 2027-02-02 周二 | ISP 故障排查专家 RAG 实战与压测达标（P99 < 300ms，Faithfulness > 0.90） |
+| 项目二收尾 | Day 56 | 2027-03-01 周一 | 画质故障自动诊断 Agent 全栈联调与 Agent Eval 达标 |
+| 全周期收尾 | Day 60 | 2027-03-09 周二 | 简历量化 + 架构图 + 系统设计 + 1v1 模拟面试 |
 
 ## 重复触发保护
 
@@ -69,6 +70,7 @@
 
 - 连续 3 个学习日未完成时，需考虑把 next_day 回退 1-2 天巩固，而不是继续往前推
 - 当前欠账：**0 天**（首周 7 天、第 2 周进阶篇 7 天全部收官闭环；第 2 周里程碑圆满达成）。
+- **2026-11-27（周五，Day 18–60 路线图与生成规则重大重构）**：结合工作日夜间 2 小时（有效纯编码 ~90 分钟）时间预算与计算摄影/ISP 核心壁垒，保留 Day 1–17 原记录，重构 Day 18–60 全部 43 个夜间里程碑单元：①第 3 周收尾升级为 Context Engineering（Day 19）、运行时熔断护栏（Day 20）、ISP 研究助手 + MCP Server（Day 21）；②第 4–5 周压缩为 8 晚（Day 22–29），跳过重型本地推理/监控运维，转向 Prompt Caching + Redis、Async + SSE、Langfuse Cloud + Prometheus + `structlog`、Docker Compose + Locust；③第 6 周重构为 8 晚（Day 30–37），砍掉 AutoGen/CrewAI Demo，改为 4 晚 LangGraph + 2 晚 VLM 多模态（定性初筛+算子复核 MCP）+ 2 晚 Agent Eval；④第 7–8 周扩容至 23 晚（Day 38–60），项目一 8 晚、项目二 11 晚（2 个深度物理算子 + 3 个轻量确定性工具 + MCP + LangGraph + 参数白名单/HITL + SSE + Agent Eval）、简历与面试冲刺 4 晚。同步更新 `learning-roadmap.md`、`learning-progress.md`、`index.md`、`AGENTS.md`、`automation-prompt.md` 与 `Day-18-FunctionCalling实战.md`。
 - **2026-11-26（周四，提前通关 Day 17）**：Day 17「SQL & 数据库工具（Text-to-SQL Agent 实战）」圆满收官！手撕 `inspect_sqlite_schema`（`sqlite_master` 原始 DDL 提取）、`execute_safe_readonly_sql`（词法拦截 + `file:...?mode=ro` 物理只读双保险 + 结构化报错自愈）、以及 `run_sql_agent` 原生 Tool Calling 闭环。实战排查并修复末尾分号误杀、`not A or B` 优先级缺陷、`OperationalError` 非 JSON 可序列化报错，以及将 `db_path` 暴露在 `args_schema` 导致模型盲猜空库死循环的经典工程坑；最终将 `db_path` 收口为 `BaseTool` 私有属性 `self.db_path`，模型在 4 轮交互（`12877.52 ms`）内自主完成值域探查与 `badcase_records JOIN isp_configs` 多表关联查询，精准输出 `SA8155` / `FGF` / `v2.1` 高风险记录，三道关卡全绿灯通关！已完成 16→17，连续未完成维持 0，`next_day` 维持 18。代码与复盘笔记 `Gemini-Study.md` 已归档。
 - **2026-11-26 20:38 预下发 Day 18（周二 2026-12-01 学习日）**：用户确认预下发，按「零剧透纯契约铁律」（`learning/AGENTS.md`）新建 `Day-18-FunctionCalling实战.md` 与 `learning/Daily/Day-18-FunctionCalling实战/day18.py` 纯契约骨架。`next_day` 18→19，已下发 17→18，已完成维持 17，连续未完成 0。挂载 `mkdocs.yml`，全自动同步 GitHub Pages。
 - **2026-11-25（周三）**：Day 16「自定义工具开发与 Tool Calling 原生协议实战」圆满收官！手撕 `@tool` 装饰器封装、`BaseTool` 强类型类定制与 `run_native_tool_agent` 原生 Tool Calling 分发闭环；实测修复 `ToolMessage.tool_call_id` 命名、历史字段契约及异常兜底边界，2 轮交互并发触发 `isp_exposure_gain_eval`（`total_gain=160.0`）与 `calc_halo_overshoot`（`halo_risk_index=4.5`），耗时 `12835.64 ms` 输出完整夜景高反差 ISP 诊断报告。已完成 15→16，连续未完成维持 0，next_day 维持 17。代码与复盘笔记 `Gemini-Study.md` 已归档。
