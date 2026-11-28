@@ -1,0 +1,2081 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="60天 AI Agent 与 Advanced RAG 工程落地指南">
+      
+      
+        <meta name="author" content="AgentGuide">
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../learning-progress/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>60天路线图 - AI Agent 开发工程实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ai-agent-60-day-1860" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href=".." title="AI Agent 开发工程实战" class="md-header__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Agent 开发工程实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              60天路线图
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至暗色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至暗色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页导读
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  学习进度与路线
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-tabs__link">
+          
+  
+  
+  每日学习任务卡
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AI Agent 开发工程实战" class="md-nav__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Agent 开发工程实战
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页导读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习进度与路线
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    学习进度与路线
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    60天路线图
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    60天路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阶段总览
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#day-160" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、每日计划表（Day 1–60）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="一、每日计划表（Day 1–60）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-naive-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 1 周 · 大模型应用开发基础 + 手撕 Naive RAG（已完成）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-advanced-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 2 周 · Advanced RAG 与生产级向量数据库（已完成）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-agent-context-engineering-mcpday-1517-day-1821-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 3 周 · Agent 开发、Context Engineering 与 MCP（Day 15–17 已完成，Day 18–21 共 4 晚收尾）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-day-2229-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 4–5 周 · 工程性能、流式交互、可观测与部署（Day 22–29，压缩为 8 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-langgraph-vlm-agent-evalday-3037-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 6 周 · LangGraph + VLM 多模态 + Agent Eval（Day 30–37，重构为 8 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#78-day-3860-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 7–8 周 · 两大工业级代表作与面试冲刺（Day 38–60，共 23 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、项目详细要求
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="二、项目详细要求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#isp-rag-day-38458" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        项目一：工业级计算摄影与 ISP 故障排查专家 RAG 系统（Day 38–45，8 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#langgraph-vlm-mcp-agentday-465611" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        项目二：基于 LangGraph + VLM + MCP 工具链的画质故障自动诊断 Agent（Day 46–56，11 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、核心资源与技术栈
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5760" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、简历三件套（第 57–60 天用）
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打卡进度追踪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../automation-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自动化陪练规范
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    每日学习任务卡
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    每日学习任务卡
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 01 - FastAPI 快速入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-02-LangChain%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 02 - LangChain 核心概念
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-03-RAG%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%88%86%E5%89%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 03 - RAG 加载与分割
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-04-RAG%E5%90%91%E9%87%8F%E5%8C%96%E4%B8%8E%E5%AD%98%E5%82%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 04 - RAG 向量化与存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-05-%E6%89%8B%E6%92%95NaiveRAG%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 05 - 手撕 Naive RAG 系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-06-NaiveRAG%E6%8E%A5%E5%8F%A3%E5%B0%81%E8%A3%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 06 - Naive RAG 接口封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-07-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EDocker%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 07 - 周度总结与 Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-08-QueryTransformation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 08 - Query Transformation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-09-HybridSearch-Rerank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 09 - 混合检索与 Rerank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-10-RAG%E8%AF%84%E4%BC%B0%E4%BD%93%E7%B3%BB/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 10 - RAG 评估体系与 Ragas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-11-RAG%E7%BB%BC%E5%90%88%E8%AF%84%E4%BC%B0%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%8C%96%E7%AE%A1%E7%BA%BF/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 11 - RAG 综合评估与自动化管线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-12-%E7%94%9F%E4%BA%A7%E7%BA%A7%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93Milvus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 12 - 生产级向量数据库 Milvus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-13-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E4%B8%8E%E5%A4%8D%E6%9D%82PDF%E8%A7%A3%E6%9E%90/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 13 - 高级数据处理与复杂PDF解析
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-14-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EAdvancedRAG%E7%B3%BB%E7%BB%9F%E5%8D%87%E7%BA%A7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 14 - 周度总结与Advanced RAG系统大升级
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-15-Agent%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%E4%B8%8EReAct%E6%A1%86%E6%9E%B6/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 15 - Agent 核心概念与 ReAct 框架实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-16-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E4%B8%8EToolCalling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 16 - 自定义工具开发与 Tool Calling 原生协议实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-17-SQL%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%B7%A5%E5%85%B7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 17 - SQL & 数据库工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-18-FunctionCalling%E5%AE%9E%E6%88%98/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 18 - Function Calling 实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learning-cards/Day-19-ContextEngineering%E4%B8%8E%E8%AE%B0%E5%BF%86/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 19 - Context Engineering 与记忆
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阶段总览
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#day-160" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、每日计划表（Day 1–60）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="一、每日计划表（Day 1–60）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-naive-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 1 周 · 大模型应用开发基础 + 手撕 Naive RAG（已完成）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-advanced-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 2 周 · Advanced RAG 与生产级向量数据库（已完成）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-agent-context-engineering-mcpday-1517-day-1821-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 3 周 · Agent 开发、Context Engineering 与 MCP（Day 15–17 已完成，Day 18–21 共 4 晚收尾）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-day-2229-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 4–5 周 · 工程性能、流式交互、可观测与部署（Day 22–29，压缩为 8 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-langgraph-vlm-agent-evalday-3037-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 6 周 · LangGraph + VLM 多模态 + Agent Eval（Day 30–37，重构为 8 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#78-day-3860-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 7–8 周 · 两大工业级代表作与面试冲刺（Day 38–60，共 23 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、项目详细要求
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="二、项目详细要求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#isp-rag-day-38458" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        项目一：工业级计算摄影与 ISP 故障排查专家 RAG 系统（Day 38–45，8 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#langgraph-vlm-mcp-agentday-465611" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        项目二：基于 LangGraph + VLM + MCP 工具链的画质故障自动诊断 Agent（Day 46–56，11 晚）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、核心资源与技术栈
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5760" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、简历三件套（第 57–60 天用）
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="ai-agent-60-day-1860">AI Agent 开发工程师 · 60 天学习路线图（Day 18–60 夜间实战优化版）</h1>
+<blockquote>
+<p>来源基线：<a href="https://github.com/adongwanai/AgentGuide/blob/main/docs/05-roadmaps/learning-roadmap-development.md">https://github.com/adongwanai/AgentGuide/blob/main/docs/05-roadmaps/learning-roadmap-development.md</a><br />
+结构：8 周 / 60 个学习日（每周一、二、三夜间推进，约 20 周完成）。<br />
+<strong>Day 18–60 节奏重构说明（2026-11-27 生效）</strong>：<br />
+- 将剩余 43 个单元（Day 18–60）定义为 <strong>43 个“2 小时夜间里程碑单元”</strong>（扣除打开环境与收尾，<strong>有效编码+调试时间约 90 分钟</strong>）。<br />
+- 白天通过学习任务卡提前完成概念理解与 Schema/架构设计；晚上<strong>零思考阻力直接手撕代码</strong>，每晚只攻克 <strong>1 个单一、可验证的闭环模块</strong>（通常 2–3 个紧凑关卡）。<br />
+- 跳过重型本地运维（本地部署 vLLM/SGLang/TensorRT-LLM/LMDeploy、自托管 Langfuse+Grafana+ELK）及过时框架（旧版 LangChain Memory、AutoGen、CrewAI 多天 Demo），聚焦 <strong>Context Engineering + MCP + LangGraph + Prompt/Redis 缓存 + SSE + Langfuse Cloud + VLM 多模态 + Agent Eval</strong>，并将节省的 6 晚全部投入两大计算摄影/ISP 工业级项目实战。</p>
+</blockquote>
+<h2 id="_1">阶段总览</h2>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>学习日范围</th>
+<th>阶段主题</th>
+<th>核心内容与技术栈</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第1周</td>
+<td>Day 1–7（已完成）</td>
+<td>大模型应用开发基础 + 手撕 Naive RAG</td>
+<td>FastAPI、LangChain LCEL、FAISS、Docker</td>
+</tr>
+<tr>
+<td>第2周</td>
+<td>Day 8–14（已完成）</td>
+<td>Advanced RAG 与生产级向量数据库</td>
+<td>HyDE/Multi-Query、BM25+Rerank、RAGAs、Milvus、版面解析</td>
+</tr>
+<tr>
+<td>第3周</td>
+<td>Day 15–21（4 晚收尾）</td>
+<td>Agent 开发、Context Engineering 与 MCP</td>
+<td>ReAct、Tool Calling、Text-to-SQL、Function Calling、Context Engineering、运行时熔断、MCP Server</td>
+</tr>
+<tr>
+<td>第4–5周</td>
+<td>Day 22–29（压缩为 8 晚）</td>
+<td>工程性能、流式交互、可观测与部署</td>
+<td>cProfile/py-spy、Prompt Caching + Redis、Async/SSE、Batching、Langfuse Cloud + Prometheus + structlog、Docker Compose + Locust</td>
+</tr>
+<tr>
+<td>第6周</td>
+<td>Day 30–37（重构为 8 晚）</td>
+<td>LangGraph + VLM 多模态 + Agent Eval</td>
+<td>LangGraph（状态路由/ToolNode/Checkpointer+HITL/Subgraph）、VLM 定性初筛+Python算子定量复核（MCP）、Golden Dataset + 自动化离线评测</td>
+</tr>
+<tr>
+<td>第7–8周</td>
+<td>Day 38–60（扩容为 23 晚）</td>
+<td>两大工业级代表作与面试冲刺</td>
+<td>项目一（8晚：ISP 故障排查专家 RAG）、项目二（11晚：画质故障自动诊断 Agent）、简历量化 + 架构图 + 系统设计 + Mock 面试（4晚）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="day-160">一、每日计划表（Day 1–60）</h2>
+<h3 id="1-naive-rag">第 1 周 · 大模型应用开发基础 + 手撕 Naive RAG（已完成）</h3>
+<table>
+<thead>
+<tr>
+<th>天数</th>
+<th>学习主题</th>
+<th>资源</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Day 1</td>
+<td>FastAPI 快速入门</td>
+<td>FastAPI Official Tutorial (https://fastapi.tiangolo.com/tutorial/)</td>
+<td>掌握 FastAPI 基础，能创建路由、处理请求</td>
+</tr>
+<tr>
+<td>Day 2</td>
+<td>LangChain 核心概念</td>
+<td>LangChain Quickstart (https://python.langchain.com/docs/tutorials/)、吴恩达 LangChain 课程、Building Systems with the ChatGPT API</td>
+<td>理解 LangChain 六大核心模块，熟练使用 LCEL</td>
+</tr>
+<tr>
+<td>Day 3</td>
+<td>RAG Part 1：加载与分割</td>
+<td>LlamaIndex Loaders (https://docs.llamaindex.ai/)、Unstructured.io、MinerU、Docling</td>
+<td>掌握 PDF/MD 等格式文档的加载与文本分块策略</td>
+</tr>
+<tr>
+<td>Day 4</td>
+<td>RAG Part 2：向量化与存储</td>
+<td>FAISS Intro (https://faiss.ai/)、Sentence Transformers</td>
+<td>理解 Embedding 原理，用 FAISS/Chroma 构建本地向量索引</td>
+</tr>
+<tr>
+<td>Day 5-6</td>
+<td>手撕 Naive RAG 系统</td>
+<td>RAG from Scratch、LLM Powered Autonomous Agents、动手学大模型应用开发、LLM 入门教程</td>
+<td>整合 FastAPI + LangChain，完成端到端文档问答 API</td>
+</tr>
+<tr>
+<td>Day 7</td>
+<td>周度总结与项目部署</td>
+<td>—</td>
+<td>将本周 RAG 项目用 Docker 打包并成功运行</td>
+</tr>
+</tbody>
+</table>
+<p><strong>本周手撕清单</strong>
+- [x] FastAPI 搭建 "Hello, World" API 服务
+- [x] LangChain LCEL 编写第一个 LLM Chain
+- [x] 30 分钟手撕一个完整的 Naive RAG 应用</p>
+<h3 id="2-advanced-rag">第 2 周 · Advanced RAG 与生产级向量数据库（已完成）</h3>
+<table>
+<thead>
+<tr>
+<th>天数</th>
+<th>学习主题</th>
+<th>资源</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Day 8</td>
+<td>Query Transformation</td>
+<td>LlamaIndex Query Transformations</td>
+<td>实现 HyDE、Multi-Query 等查询改写策略</td>
+</tr>
+<tr>
+<td>Day 9</td>
+<td>混合检索与重排 (Rerank)</td>
+<td>LlamaIndex Cohere Rerank、论文 Modular RAG</td>
+<td>实现 BM25 + Embedding 混合检索并集成 Reranker</td>
+</tr>
+<tr>
+<td>Day 10-11</td>
+<td>RAG 评估体系</td>
+<td>RAGAs (https://docs.ragas.io/)、FlashRAG、DeepEval、Lighteval</td>
+<td>掌握 RAG 核心评估指标，用 RAGAs 对比优化前后性能</td>
+</tr>
+<tr>
+<td>Day 12</td>
+<td>生产级向量数据库 (Milvus)</td>
+<td>Milvus Quick Start (https://milvus.io/docs)、Infinity、Qdrant</td>
+<td>Docker 部署 Milvus，掌握其 Python SDK</td>
+</tr>
+<tr>
+<td>Day 13</td>
+<td>高级数据处理</td>
+<td>Unstructured.io、MinerU、PDF-Extract-Kit、Docling、GOT-OCR2.0</td>
+<td>用 Unstructured/MinerU 解析含表格、图片的复杂 PDF</td>
+</tr>
+<tr>
+<td>Day 14</td>
+<td>周度总结与系统升级</td>
+<td>—</td>
+<td>将 RAG 系统升级，集成混合检索、Reranker 和 Milvus</td>
+</tr>
+</tbody>
+</table>
+<p><strong>本周手撕清单</strong>
+- [x] 实现 BM25 + 向量的混合检索
+- [x] 引入 Cross-Encoder Rerank 提升检索精度
+- [x] 用 RAGAs 评估 Faithfulness 与 Answer Relevancy
+- [x] Milvus-Lite 部署并完成 Schema 与标量过滤检索</p>
+<h3 id="3-agent-context-engineering-mcpday-1517-day-1821-4">第 3 周 · Agent 开发、Context Engineering 与 MCP（Day 15–17 已完成，Day 18–21 共 4 晚收尾）</h3>
+<table>
+<thead>
+<tr>
+<th>单元</th>
+<th>学习主题</th>
+<th>核心资源</th>
+<th>今晚单一目标与交付边界（~2h，有效编码 ~90min）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Day 15</strong></td>
+<td>Agent 核心概念</td>
+<td>LLM Powered Autonomous Agents、论文 ReAct</td>
+<td>（已完成）手撕 ToolRegistry、ReActParser 与 ReActAgentLoop 闭环</td>
+</tr>
+<tr>
+<td><strong>Day 16</strong></td>
+<td>自定义工具开发</td>
+<td>LangChain Custom Tools、MCP 协议概念</td>
+<td>（已完成）手撕 <code>@tool</code> 与 <code>BaseTool</code> 双模式强类型工具及并发调度</td>
+</tr>
+<tr>
+<td><strong>Day 17</strong></td>
+<td>SQL &amp; 数据库工具</td>
+<td>SQLite DDL 探查、只读连接隔离</td>
+<td>（已完成）手撕安全只读 Text-to-SQL Agent 多表联查闭环</td>
+</tr>
+<tr>
+<td><strong>Day 18</strong></td>
+<td>Function Calling 实战</td>
+<td>OpenAI Function Calling &amp; Structured Outputs</td>
+<td>关卡 1–3：Strict Schema 抽取 <code>ISPBugTicket</code> + 原生 <code>tool_calls</code> 循环与分发表 + 两段式分诊（若调试超时，可将关卡 3 顺延至次日 30min 收尾）</td>
+</tr>
+<tr>
+<td><strong>Day 19</strong></td>
+<td>Context Engineering 与记忆</td>
+<td>Context Engineering for Agents、SQLite/JSON 状态持久化</td>
+<td>实现上下文窗口裁剪/摘要、大工具输出截断策略，以及轻量会话状态持久化（跳过旧版 <code>LangChain Memory</code>）</td>
+</tr>
+<tr>
+<td><strong>Day 20</strong></td>
+<td>容错与运行时熔断</td>
+<td><code>tenacity</code> Docs、Agent Guardrails 实践</td>
+<td>为原生 Agent 循环接入 <code>tenacity</code> 指数退避重试 + <code>max_steps</code> / Token 预算熔断护栏 + 工具异常结构化降级</td>
+</tr>
+<tr>
+<td><strong>Day 21</strong></td>
+<td>ISP 研究助手 + MCP 初探</td>
+<td>Model Context Protocol Python SDK (<code>mcp</code>)</td>
+<td>搭建集成 RAG/检索的「ISP 研究助手」，并将 1 个本地查询工具封装成最小可运行 <strong>MCP Server</strong> 跑通调用</td>
+</tr>
+</tbody>
+</table>
+<p><strong>本周手撕清单</strong>
+- [x] 实现 ReAct 循环、自定义工具与只读 Text-to-SQL Agent
+- [ ] 用原生 Function Calling 实现 <code>ISPBugTicket</code> 抽取与两段式分诊
+- [ ] 实现上下文裁剪/摘要、大工具输出截断与轻量持久化
+- [ ] 接入 <code>tenacity</code> 重试与 <code>max_steps</code>/Token 预算熔断护栏
+- [ ] 封装 1 个最小可运行 MCP Server 并接入研究助手</p>
+<hr />
+<h3 id="45-day-2229-8">第 4–5 周 · 工程性能、流式交互、可观测与部署（Day 22–29，压缩为 8 晚）</h3>
+<blockquote>
+<p><strong>架构精简说明</strong>：跳过重型本地运维（不本地部署 vLLM/SGLang/TensorRT-LLM/LMDeploy，不自托管 Langfuse+Grafana+ELK），聚焦高 ROI 云端/轻量方案。<br />
+<strong>周末前置准备提示</strong>：建议在 <strong>Day 27 前的周末</strong>提前注册 <strong>Langfuse Cloud（免费版）</strong> 并获取 <code>LANGFUSE_PUBLIC_KEY</code> / <code>LANGFUSE_SECRET_KEY</code>，避免占用工作日夜间编码时间。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>单元</th>
+<th>主题</th>
+<th>核心资源</th>
+<th>今晚单一目标与交付边界（~2h，有效编码 ~90min）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Day 22</strong></td>
+<td>性能 Profiling</td>
+<td>Python <code>cProfile</code> / <code>py-spy</code></td>
+<td>用 <code>cProfile</code> / <code>py-spy</code> 分析现有链路耗时占比（拆清 LLM RTT vs 检索 vs 本地解析）</td>
+</tr>
+<tr>
+<td><strong>Day 23</strong></td>
+<td>分层缓存优化</td>
+<td>API Prompt Caching、Redis Python (<code>redis.asyncio</code>)</td>
+<td>验证 API 级 <strong>Prompt Caching</strong> 命中条件（固定 System/Tools 前缀）；用 Redis 缓存高频 RAG 查询与确定性工具结果</td>
+</tr>
+<tr>
+<td><strong>Day 24</strong></td>
+<td>FastAPI 异步化</td>
+<td>FastAPI Async、<code>AsyncOpenAI</code> / <code>httpx</code></td>
+<td>将同步 HTTP / OpenAI 调用迁移至 <code>AsyncOpenAI</code> / <code>httpx</code> + <code>asyncio.gather</code> 并发执行独立工具</td>
+</tr>
+<tr>
+<td><strong>Day 25</strong></td>
+<td>SSE 流式输出</td>
+<td>FastAPI <code>StreamingResponse</code>、SSE 协议</td>
+<td>基于 FastAPI <code>StreamingResponse</code> 实现 SSE，实时向前端推送 Agent 推理步骤进度与最终流式输出</td>
+</tr>
+<tr>
+<td><strong>Day 26</strong></td>
+<td>Batching 与推理原理</td>
+<td>SentenceTransformers Batching、KV Cache / PagedAttention</td>
+<td>实现 Embedding / Rerank 批处理；精读 KV Cache、PagedAttention、Prefix Caching 与 TTFT/TPOT（不折腾本地多引擎部署）</td>
+</tr>
+<tr>
+<td><strong>Day 27</strong></td>
+<td>可观测性（Langfuse + Prometheus）</td>
+<td>Langfuse Cloud、<code>prometheus-fastapi-instrumentator</code></td>
+<td>接入 <strong>Langfuse Cloud 免费版</strong> 追踪调用链与 Token 成本 + 用 <code>prometheus-fastapi-instrumentator</code> 暴露 <code>/metrics</code></td>
+</tr>
+<tr>
+<td><strong>Day 28</strong></td>
+<td>结构化日志与单机镜像</td>
+<td><code>structlog</code>、Docker Multi-stage Build</td>
+<td>集成 <code>structlog</code> 输出 JSON 日志 + 为 FastAPI 编写多阶段 <code>Dockerfile</code> 并本地构建启动成功</td>
+</tr>
+<tr>
+<td><strong>Day 29</strong></td>
+<td>Docker Compose 与压测</td>
+<td>Docker Compose、<code>locust</code></td>
+<td>编写 <code>docker-compose.yml</code> 一键拉起 <code>FastAPI + Redis + Milvus</code> + 使用 Locust 压测并记录基准 QPS/P99</td>
+</tr>
+</tbody>
+</table>
+<p><strong>本阶段手撕清单</strong>
+- [ ] 完成链路 Profiling 耗时拆解（LLM RTT vs 检索 vs 本地解析）
+- [ ] 验证 Prompt Caching 前缀命中，并接入 Redis 缓存高频 RAG/工具结果
+- [ ] 改造 FastAPI 异步并发与 SSE 步骤流式推送
+- [ ] 接入 Langfuse Cloud Trace + Prometheus <code>/metrics</code> + <code>structlog</code> JSON 日志
+- [ ] Docker Compose 一键拉起全栈并用 Locust 记录基准 QPS/P99</p>
+<hr />
+<h3 id="6-langgraph-vlm-agent-evalday-3037-8">第 6 周 · LangGraph + VLM 多模态 + Agent Eval（Day 30–37，重构为 8 晚）</h3>
+<blockquote>
+<p><strong>架构重构说明</strong>：砍掉已归档/冗余的 AutoGen 与 CrewAI 多天 Demo；8 晚 100% 为项目二（画质故障自动诊断 Agent）复用服务。<br />
+<strong>周末前置准备提示</strong>：建议在 <strong>Day 34 前的周末</strong>准备好 3–5 张模拟/脱敏画质测试图（含局部 ROI），在 <strong>Day 36 前的周末</strong>梳理好 Golden Dataset 的初步输入输出样例。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>单元</th>
+<th>主题</th>
+<th>核心资源</th>
+<th>今晚单一目标与交付边界（~2h，有效编码 ~90min）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Day 30</strong></td>
+<td>LangGraph ①：状态与路由</td>
+<td>LangGraph Docs (<code>StateGraph</code>)</td>
+<td>掌握 <code>StateGraph</code>、Pydantic/TypedDict State、Node 与条件边（Conditional Edges），跑通基础路由闭环</td>
+</tr>
+<tr>
+<td><strong>Day 31</strong></td>
+<td>LangGraph ②：循环纠错闭环</td>
+<td>LangGraph <code>ToolNode</code> &amp; Edges</td>
+<td>实现 <code>ToolNode</code> 与报错自动回溯重试环，并与 Day 18 手写 <code>while</code> 循环做结构对比</td>
+</tr>
+<tr>
+<td><strong>Day 32</strong></td>
+<td>LangGraph ③：断点恢复与 HITL</td>
+<td>LangGraph Persistence &amp; <code>interrupt</code></td>
+<td>接入 <code>Checkpointer</code>（SQLite/Memory）实现会话断点续跑，跑通 <code>interrupt</code> <strong>Human-in-the-Loop</strong> 人工审批流程</td>
+</tr>
+<tr>
+<td><strong>Day 33</strong></td>
+<td>LangGraph ④：Subgraph 与协作模式</td>
+<td>LangGraph Multi-Agent / Supervisor</td>
+<td>用 Subgraph / Supervisor 模式实现多角色分工（覆盖 Multi-Agent 概念），并整理 LangGraph vs CrewAI/MAF 选型对比</td>
+</tr>
+<tr>
+<td><strong>Day 34</strong></td>
+<td>VLM 多模态 ①：图文输入与初筛</td>
+<td>OpenAI Vision / 多模态消息格式、Pillow</td>
+<td>实现图像缩放/Base64 传参、控制多图 Token 成本，用 VLM 输出结构化画质缺陷初筛结果（缺陷类型 + ROI 区域）</td>
+</tr>
+<tr>
+<td><strong>Day 35</strong></td>
+<td>VLM 多模态 ②：视觉+算子协同</td>
+<td>MCP Server + Python 图像算子</td>
+<td>跑通“VLM 定性初筛 → 调用确定性 Python 图像工具定量复核”闭环，并将视觉工具封装为 MCP Server</td>
+</tr>
+<tr>
+<td><strong>Day 36</strong></td>
+<td>Agent Eval ①：黄金集与轨迹采集</td>
+<td>Golden Dataset 设计、轨迹日志规范</td>
+<td>构建 15–20 条带预期工具与结论的 Golden Dataset（含边界 Bad Case），编写批量运行与轨迹日志采集脚本</td>
+</tr>
+<tr>
+<td><strong>Day 37</strong></td>
+<td>Agent Eval ②：自动化指标评测</td>
+<td>离线 Eval 评分器 &amp; LLM-as-a-Judge</td>
+<td>实现离线评分脚本（Tool 选择命中率、参数 Schema 合规率、轨迹收敛步数、LLM-as-a-Judge 诊断准确率）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>本阶段手撕清单</strong>
+- [ ] 用 LangGraph 跑通 StateGraph 路由、ToolNode 纠错循环、Checkpointer + HITL、Subgraph/Supervisor
+- [ ] 跑通 VLM 多模态结构化初筛 + 确定性 Python 工具复核（MCP Server 封装）
+- [ ] 建成 15–20 条 Golden Dataset 与自动化离线评测脚本</p>
+<hr />
+<h3 id="78-day-3860-23">第 7–8 周 · 两大工业级代表作与面试冲刺（Day 38–60，共 23 晚）</h3>
+<blockquote>
+<p><strong>周末前置准备提示</strong>：
+- <strong>Day 38 前周末</strong>：整理好脱敏/公开 ISP Spec 文档、排障 SOP 与 C++ 参数配置字典素材；
+- <strong>Day 48 前周末</strong>：整理好模拟 Bad Case 图片与脱敏 XML/JSON 配置文件，以及用于 Day 55–56 的 20–30 条 Agent Eval 黄金样本，避免占用工作日晚上 2 小时编码时间。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>单元</th>
+<th>主题</th>
+<th>今晚单一目标与交付边界（~2h，有效编码 ~90min）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Day 38</strong></td>
+<td>项目一 ①：语料与元数据规划</td>
+<td>基于周末备好的脱敏/公开 ISP 文档与配置字典，完成结构化切分与 <code>module/chip/defect</code> 标签提取</td>
+</tr>
+<tr>
+<td><strong>Day 39</strong></td>
+<td>项目一 ②：Milvus Schema 与入库</td>
+<td>定义 Milvus 强类型 Schema 与布尔标量过滤索引，完成批量向量化入库与前置过滤查询验证</td>
+</tr>
+<tr>
+<td><strong>Day 40</strong></td>
+<td>项目一 ③：混合检索与重排</td>
+<td>实现 BM25 + BGE 向量双路召回 + Cross-Encoder Rerank 融合管线</td>
+</tr>
+<tr>
+<td><strong>Day 41</strong></td>
+<td>项目一 ④：RAGAs 评测调优</td>
+<td>构建 15–20 条领域 QA 测试集，用 RAGAs 评测并调优 TopK/Chunk，目标 Faithfulness &gt; 0.90</td>
+</tr>
+<tr>
+<td><strong>Day 42</strong></td>
+<td>项目一 ⑤：FastAPI 异步与缓存</td>
+<td>封装异步问答 API，接入 Prompt Caching 与 Redis 高频检索缓存</td>
+</tr>
+<tr>
+<td><strong>Day 43</strong></td>
+<td>项目一 ⑥：可观测与日志接入</td>
+<td>接入 Langfuse Trace、Prometheus <code>/metrics</code> 与 <code>structlog</code> 结构化日志</td>
+</tr>
+<tr>
+<td><strong>Day 44</strong></td>
+<td>项目一 ⑦：容器化与压测达标</td>
+<td>Docker Compose 一键部署项目一全栈，Locust 压测并优化至 P99 &lt; 300ms</td>
+</tr>
+<tr>
+<td><strong>Day 45</strong></td>
+<td>项目一 ⑧：收尾归档</td>
+<td>整理实测性能报告、架构图、README 与复盘记录</td>
+</tr>
+<tr>
+<td><strong>Day 46</strong></td>
+<td>项目二 ①：核心算子 <code>calc_halo_sdf</code></td>
+<td>实现基于边缘法向环带 SDF 的 Halo 量化算子 + 单元测试</td>
+</tr>
+<tr>
+<td><strong>Day 47</strong></td>
+<td>项目二 ②：核心算子 <code>calc_noise_envelope</code></td>
+<td>实现暗部局部方差与信噪比包络量化算子 + 单元测试</td>
+</tr>
+<tr>
+<td><strong>Day 48</strong></td>
+<td>项目二 ③：轻量工具集与测试样本</td>
+<td>实现 <code>calc_color_cast</code>、<code>calc_ghost_metric</code>、<code>parse_isp_config</code>（轻量确定性版本）+ 整理模拟 Bad Case 图与 XML</td>
+</tr>
+<tr>
+<td><strong>Day 49</strong></td>
+<td>项目二 ④：MCP Server 封装联调</td>
+<td>将 5 个诊断工具统一封装为标准 <strong>MCP Server</strong> 并验证工具发现与调用</td>
+</tr>
+<tr>
+<td><strong>Day 50–51</strong></td>
+<td>项目二 ⑤–⑥：LangGraph 主闭环</td>
+<td>用 LangGraph 编排：<code>VLM 初筛 → MCP 视觉算子 → 联动项目一 Milvus 根因检索 → 推导 C++/XML 调参建议</code>（2 晚完成闭环与联调）</td>
+</tr>
+<tr>
+<td><strong>Day 52</strong></td>
+<td>项目二 ⑦：业务护栏与 HITL</td>
+<td>加入 <strong>参数名白名单/安全边界校验护栏</strong>（防幻觉编造宏）、Pydantic 报告输出及高危改参 HITL 确认节点</td>
+</tr>
+<tr>
+<td><strong>Day 53</strong></td>
+<td>项目二 ⑧：SSE 流式交互接口</td>
+<td>FastAPI 封装项目二接口并支持 SSE 实时推送诊断步骤进度</td>
+</tr>
+<tr>
+<td><strong>Day 54</strong></td>
+<td>项目二 ⑨：全栈容器化联调</td>
+<td>Docker Compose 联调项目一（知识库服务）+ 项目二（诊断 Agent + MCP Server）</td>
+</tr>
+<tr>
+<td><strong>Day 55–56</strong></td>
+<td>项目二 ⑩–⑪：Agent Eval 与稳定性调优</td>
+<td>用 20–30 条构造 Bad Case 跑完离线 Agent Eval，补全降级容错与异常重试，记录实测成功率与耗时对比（2 晚完成）</td>
+</tr>
+<tr>
+<td><strong>Day 57</strong></td>
+<td>简历量化打磨</td>
+<td>按算法/AI 工程复合岗要求，用 STAR 法则写入两项目量化指标</td>
+</tr>
+<tr>
+<td><strong>Day 58</strong></td>
+<td>架构图与项目讲述</td>
+<td>绘制两项目架构/数据流图，打磨 3 分钟项目亮点口述稿</td>
+</tr>
+<tr>
+<td><strong>Day 59</strong></td>
+<td>系统设计高频演练</td>
+<td>重点演练：VLM vs 确定性算子边界、LangGraph vs Multi-Agent 选型、参数防幻觉护栏、Prompt Caching 优化</td>
+</tr>
+<tr>
+<td><strong>Day 60</strong></td>
+<td>1v1 模拟面试</td>
+<td>对照两项目开展全真深挖问答与查漏补缺</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_2">二、项目详细要求</h2>
+<h3 id="isp-rag-day-38458">项目一：工业级计算摄影与 ISP 故障排查专家 RAG 系统（Day 38–45，8 晚）</h3>
+<ul>
+<li><strong>业务场景</strong>：解决相机、手机与车载 ISP 影像算法研发中的高难度画质缺陷排查难、知识碎片化痛点（如 FGF 边缘光晕 Halo、暗部噪声塌陷、高光截断偏色、去鬼影连通域双轮廓/漏检、频闪）。</li>
+<li><strong>数据源</strong>：脱敏/公开 ISP Pipeline 架构规范 + 光学/滤波算法原理（FGF/TMC/Deghosting/时空去噪） + 真实画质缺陷排障 SOP 手册 + C++ 模块参数配置字典（Milvus + SQLite/JSON）。</li>
+<li><strong>核心技术</strong>：</li>
+<li>Milvus 强类型 Schema 与布尔标量物理前置过滤（按模块 <code>module=='TMC'</code>、平台 <code>chip=='SA8155'</code>、缺陷类型 <code>defect=='Halo'</code> 精准隔离）；</li>
+<li>BM25 + BGE 向量混合检索与 Cross-Encoder 重排；</li>
+<li>RAGAs 体系量化评估 Faithfulness 真实度（目标 &gt; 0.90）与 Context Relevance 信噪比。</li>
+<li><strong>性能与可观测部署</strong>：</li>
+<li>FastAPI 异步高并发接口 + API 级 Prompt Caching + Redis 高频检索缓存；</li>
+<li>Langfuse Cloud Trace + Prometheus <code>/metrics</code> + <code>structlog</code> JSON 日志；</li>
+<li>Docker Compose 一键部署，Locust 压测优化至 P99 &lt; 300ms。</li>
+<li><strong>简历亮点</strong>：打造行业首个 ISP 画质领域专家知识检索系统；长篇复杂 Spec 与宏配置检索从人工翻阅升级为秒级精准定位；P99 检索延迟 &lt; 300ms，事实忠实度得分 &gt; 0.90。</li>
+</ul>
+<h3 id="langgraph-vlm-mcp-agentday-465611">项目二：基于 LangGraph + VLM + MCP 工具链的画质故障自动诊断 Agent（Day 46–56，11 晚）</h3>
+<ul>
+<li><strong>业务场景</strong>：输入用户上报的画质 Bad Case 图像（或 ROI 区域）+ 当前 ISP Pipeline XML/JSON 配置文件，通过 <strong>“VLM 定性初筛 + 确定性 Python 算子定量复核”</strong> 范式，联动项目一知识库逆向推导根因，并输出针对特定 C++ 模块的调参建议。</li>
+<li><strong>核心架构与编排（LangGraph + MCP）</strong>：</li>
+<li><strong>VLM 定性初筛</strong>：缩放传图与 Token 控制，初步识别缺陷类型与疑似 ROI 区域；</li>
+<li><strong>MCP 确定性工具层</strong>（5 个工具统一封装为标准 <strong>MCP Server</strong>）：<ul>
+<li><strong>2 个核心物理算子做深</strong>（含单元测试）：</li>
+<li><code>calc_halo_sdf</code>：基于边缘法向环带符号距离场（SDF）计算人像边缘 Halo 溢出度与 P95 分位数；</li>
+<li><code>calc_noise_envelope</code>：计算暗部局部方差与信噪比包络，评估噪声塌陷程度；</li>
+<li><strong>3 个轻量干净确定性工具</strong>（避免开发耗时失控）：</li>
+<li><code>calc_color_cast</code>：计算高光/暗部 RGB-YUV 色差与偏色角分布；</li>
+<li><code>calc_ghost_metric</code>：多帧对齐差分与移动物体置信度校验；</li>
+<li><code>parse_isp_config</code>：解析并提取当前模块滤波与增益配置参数字典；</li>
+</ul>
+</li>
+<li><strong>知识推理与业务护栏</strong>：<ul>
+<li>联动项目一 Milvus 知识库，结合量化异常指标检索物理机理；</li>
+<li><strong>参数名白名单/安全边界校验护栏</strong>（防幻觉编造不存在的 XML/C++ 宏与越界值）；</li>
+<li>Pydantic 结构化报告输出 + 高危改参 <strong>HITL（Human-in-the-Loop）</strong> 人工确认节点；</li>
+</ul>
+</li>
+<li><strong>流式交付与全栈容器化</strong>：FastAPI + <strong>SSE</strong> 实时推送诊断步骤进度，Docker Compose 联调项目一与项目二。</li>
+<li><strong>离线评测与稳定性</strong>：<code>tenacity</code> 指数退避重试 + 运行时步数/Token 熔断 + 降级容错；通过 20–30 条构造 Bad Case 的 <strong>Agent Eval 黄金集</strong>实测工具选择命中率、Schema 合规率、轨迹收敛步数与诊断准确率。</li>
+<li><strong>简历亮点</strong>：行业罕有的“计算摄影底层 + VLM + MCP + LangGraph”复合落地代表作；将资深算法工程师排查复杂画质 Bad Case 的耗时从“天级”缩短至“分钟级”；兼顾物理算子确定性与 Agent 闭环防幻觉工程落地。</li>
+</ul>
+<hr />
+<h2 id="_3">三、核心资源与技术栈</h2>
+<ul>
+<li><strong>编排与协议</strong>：LangGraph（<code>StateGraph</code> / <code>ToolNode</code> / <code>Checkpointer</code> / <code>Subgraph</code>）、MCP (Model Context Protocol)、OpenAI Function Calling &amp; Structured Outputs（选型对比参考 CrewAI / Microsoft Agent Framework）</li>
+<li><strong>检索与数据</strong>：Milvus（Milvus-Lite / Docker）、BM25、BGE Embedding、Cross-Encoder Rerank、PyMuPDF/MinerU</li>
+<li><strong>性能与服务</strong>：FastAPI（Async + SSE <code>StreamingResponse</code>）、Redis、API Prompt Caching、Locust、Docker Compose</li>
+<li><strong>可观测与评估</strong>：Langfuse Cloud、Prometheus (<code>/metrics</code>)、<code>structlog</code>、RAGAs、Agent Eval（Golden Dataset + LLM-as-a-Judge）</li>
+<li><strong>多模态与算子</strong>：OpenAI Vision / 多模态 VLM、NumPy / OpenCV / Pillow 确定性图像量化算子</li>
+</ul>
+<h2 id="5760">四、简历三件套（第 57–60 天用）</h2>
+<ol>
+<li><strong>2 套端到端可运行、Docker Compose 全栈联调的专属领域项目</strong>：ISP 故障排查专家 RAG + 画质故障自动诊断 Agent</li>
+<li><strong>真实可验证的量化指标</strong>：RAG P99 &lt; 300ms、RAGAs Faithfulness &gt; 0.90、Agent Eval 黄金集工具命中率 / Schema 合规率 / 诊断成功率实测数据、故障定位效率从天级缩短至分钟级</li>
+<li><strong>复合生产级技术栈</strong>：FastAPI (Async + SSE) + LangGraph + MCP + VLM + Milvus + Redis + Prompt Caching + Langfuse Cloud + Prometheus + <code>structlog</code> + Docker Compose + Python 计算摄影视觉算子库</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

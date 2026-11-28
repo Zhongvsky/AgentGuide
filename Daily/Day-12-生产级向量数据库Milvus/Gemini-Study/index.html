@@ -1,0 +1,1449 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="60天 AI Agent 与 Advanced RAG 工程落地指南">
+      
+      
+        <meta name="author" content="AgentGuide">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Day 12 · Advanced RAG：生产级向量数据库 (Milvus) 与元数据混合过滤实战深度复盘笔记 - AI Agent 开发工程实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day-12-advanced-rag-milvus" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="AI Agent 开发工程实战" class="md-header__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Agent 开发工程实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Day 12 · Advanced RAG：生产级向量数据库 (Milvus) 与元数据混合过滤实战深度复盘笔记
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至暗色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至暗色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页导读
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../learning-roadmap/" class="md-tabs__link">
+          
+  
+  
+  学习进度与路线
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-tabs__link">
+          
+  
+  
+  每日学习任务卡
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="AI Agent 开发工程实战" class="md-nav__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Agent 开发工程实战
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页导读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习进度与路线
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    学习进度与路线
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    60天路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打卡进度追踪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../automation-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自动化陪练规范
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    每日学习任务卡
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    每日学习任务卡
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 01 - FastAPI 快速入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-02-LangChain%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 02 - LangChain 核心概念
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-03-RAG%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%88%86%E5%89%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 03 - RAG 加载与分割
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-04-RAG%E5%90%91%E9%87%8F%E5%8C%96%E4%B8%8E%E5%AD%98%E5%82%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 04 - RAG 向量化与存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-05-%E6%89%8B%E6%92%95NaiveRAG%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 05 - 手撕 Naive RAG 系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-06-NaiveRAG%E6%8E%A5%E5%8F%A3%E5%B0%81%E8%A3%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 06 - Naive RAG 接口封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-07-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EDocker%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 07 - 周度总结与 Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-08-QueryTransformation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 08 - Query Transformation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-09-HybridSearch-Rerank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 09 - 混合检索与 Rerank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-10-RAG%E8%AF%84%E4%BC%B0%E4%BD%93%E7%B3%BB/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 10 - RAG 评估体系与 Ragas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-11-RAG%E7%BB%BC%E5%90%88%E8%AF%84%E4%BC%B0%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%8C%96%E7%AE%A1%E7%BA%BF/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 11 - RAG 综合评估与自动化管线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-12-%E7%94%9F%E4%BA%A7%E7%BA%A7%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93Milvus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 12 - 生产级向量数据库 Milvus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-13-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E4%B8%8E%E5%A4%8D%E6%9D%82PDF%E8%A7%A3%E6%9E%90/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 13 - 高级数据处理与复杂PDF解析
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-14-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EAdvancedRAG%E7%B3%BB%E7%BB%9F%E5%8D%87%E7%BA%A7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 14 - 周度总结与Advanced RAG系统大升级
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-15-Agent%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%E4%B8%8EReAct%E6%A1%86%E6%9E%B6/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 15 - Agent 核心概念与 ReAct 框架实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-16-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E4%B8%8EToolCalling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 16 - 自定义工具开发与 Tool Calling 原生协议实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-17-SQL%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%B7%A5%E5%85%B7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 17 - SQL & 数据库工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-18-FunctionCalling%E5%AE%9E%E6%88%98/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 18 - Function Calling 实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-19-ContextEngineering%E4%B8%8E%E8%AE%B0%E5%BF%86/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 19 - Context Engineering 与记忆
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、 核心知识点与架构心智模型
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="一、 核心知识点与架构心智模型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 云原生存算分离架构心智模型（四层解耦）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-milvus-lite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Milvus-Lite 研发模式：极速平替
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-collection-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Collection Schema 强类型契约设计
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 向量索引与相似度度量
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、 真实 Benchmark 对照实验量化台账
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bug-hunting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、 实战踩坑与生产防御细节（Bug Hunting）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三、 实战踩坑与生产防御细节（Bug Hunting）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-limit-output_fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        踩坑 1：未透传 limit 与 output_fields 参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        踩坑 2：本地离线加载模型时的网络超时
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        踩坑 3：索引与集合的 Load 遗忘症
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mock-interview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、 面试级高频技术考察（Mock Interview）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="四、 面试级高频技术考察（Mock Interview）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1selectivity-001-hnsw-bitset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1：如果生产数据量达到数千万级，标量过滤条件的选择率（Selectivity）极低（如全库只有 0.01% 的数据符合条件），纯 HNSW 配合 Bitset 过滤会遇到什么性能瓶颈？业界如何优化？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2milvus-flush-hnsw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2：Milvus 中新增的数据在没有落盘（Flush）并构建 HNSW 索引之前，为什么依然可以被实时检索出来？底层机制是什么？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="day-12-advanced-rag-milvus">Day 12 · Advanced RAG：生产级向量数据库 (Milvus) 与元数据混合过滤实战深度复盘笔记</h1>
+<blockquote>
+<p>日期：2026-11-18（周三）｜ 学习日：Day 12 / 60 ｜ 状态：已完成<br />
+阶段：第 2 周 · Advanced RAG 与生产级向量数据库<br />
+代码归档：<a href="file:///d:/Study/AgentGuide/learning/Daily/Day-12-生产级向量数据库Milvus/day12.py"><code>day12.py</code></a></p>
+</blockquote>
+<hr />
+<h2 id="_1">一、 核心知识点与架构心智模型</h2>
+<p>在 Day 4 ~ Day 7 中，我们基于本地单机 FAISS 构建了 Naive RAG 的向量底座。但在企业级生产环境中，FAISS 暴露出了三大不可调和的工程硬伤：
+1. <strong>标量元数据混合过滤无力（Metadata Filtering Nightmare）</strong>：FAISS 只能做后过滤（Post-filtering），极易发生召回结果被洗白（False Negative）；
+2. <strong>缺乏动态 CRUD 与实时可见性</strong>：内存索引文件难以就地更新或物理删除；
+3. <strong>缺少生产级架构支撑</strong>：无法支持多租户、动态分区与水平伸缩。</p>
+<p>Day 12 正式引入云原生分布式向量数据库 <strong>Milvus</strong>，打通企业级 RAG 的生产级存储基石。</p>
+<h3 id="1">1. 云原生存算分离架构心智模型（四层解耦）</h3>
+<ul>
+<li><strong>控制面（Coordinators）</strong>：</li>
+<li><code>RootCoord</code>：全局时钟 TSO 纳秒级分配、全局 DDL（建表/删表）调度；</li>
+<li><code>DataCoord</code>：数据分段（Segment）分配与后台 Compaction 碎片整理；</li>
+<li><code>IndexCoord</code>：异步索引任务指派；</li>
+<li><code>QueryCoord</code>：QueryNode 负载均衡、Segment 副本调度与健康监控。</li>
+<li><strong>计算面（Worker Nodes，完全无状态）</strong>：</li>
+<li><code>DataNode</code>：消费 Kafka/Pulsar WAL 流式日志，批量落盘刷入 MinIO；</li>
+<li><code>IndexNode</code>：CPU/GPU 密集型节点，离线构建 HNSW/IVF 索引；</li>
+<li><code>QueryNode</code>：查询密集型节点，装载索引至 RAM，执行布尔标量过滤与 ANN 向量检索。</li>
+<li><strong>元数据与共识（etcd）</strong>：</li>
+<li>保存 Schema 结构、节点心跳、拓扑路由；<strong>绝不存储任何向量实体</strong>。</li>
+<li><strong>持久化底座（MinIO / AWS S3）</strong>：</li>
+<li>存储全量 Binlog、数据切片与索引文件，提供超高耐久度与无损灾备。</li>
+</ul>
+<h3 id="2-milvus-lite">2. Milvus-Lite 研发模式：极速平替</h3>
+<ul>
+<li><strong>无外部依赖</strong>：通过 <code>pymilvus</code> 绑定的 C++ 动态库直接运行，不依赖 Docker、etcd、MinIO；</li>
+<li><strong>单文件持久化</strong>：所有 Schema、索引、数据统一保存在单个本地 <code>.db</code> 文件（如 <code>milvus_travel.db</code>）；</li>
+<li><strong>API 契约 100% 对齐</strong>：从本地嵌入式到云端 K8s 分布式集群，仅需变更 <code>MilvusClient(uri=...)</code> 地址，业务检索逻辑零改动。</li>
+</ul>
+<h3 id="3-collection-schema">3. Collection Schema 强类型契约设计</h3>
+<ul>
+<li><strong>Primary Key</strong>：<code>INT64</code> + <code>auto_id=True</code>，由系统生成严格递增流水号，杜绝分布式 ID 碰撞；</li>
+<li><strong>FLOAT_VECTOR</strong>：必须显式锁死 <code>dim=512</code>（与 Embedding 模型严格匹配），便于 C++ 底层连续内存对齐（SIMD 指令集加速）；</li>
+<li><strong>VarChar 标量与动态字段</strong>：</li>
+<li>高频过滤列（<code>department</code>, <code>doc_type</code>, <code>effective_year</code>）设为显式静态字段并限制 <code>max_length</code>；</li>
+<li>开启 <code>enable_dynamic_field=True</code>，让 Schema 具备兼容未来动态多变属性的扩展能力。</li>
+</ul>
+<h3 id="4">4. 向量索引与相似度度量</h3>
+<ul>
+<li><strong>度量方式</strong>：选用 <code>COSINE</code>（余弦相似度），聚焦语义方向，消除文本长度差异；配合 L2 归一化后计算效率达到极致；</li>
+<li><strong>索引算法</strong>：选用 <strong>HNSW（分层导航小世界图）</strong>，黄金参数配置：</li>
+<li>建索引：<code>M=16</code>（节点出度），<code>efConstruction=64</code>（建图探索视野）；</li>
+<li>检索查询：<code>ef=64</code>（寻路候选队列深度）；</li>
+<li>相比 <code>IVF_FLAT</code> 具备更高的召回率（&gt;98%）与稳定的毫秒级低延迟响应。</li>
+</ul>
+<hr />
+<h2 id="benchmark">二、 真实 Benchmark 对照实验量化台账</h2>
+<p>测试查询：<code>「普通员工出差乘坐高铁有什么报销和席位规定？」</code></p>
+<table>
+<thead>
+<tr>
+<th>实验组别</th>
+<th>检索策略与过滤条件</th>
+<th>Top-K 召回部门分布</th>
+<th>最高得分</th>
+<th>业务召回效果判定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>实验组 A</strong></td>
+<td>无过滤纯向量检索 (Unfiltered)</td>
+<td>Top-1: 财务部 (0.7666)<br/>Top-2: 财务部 (0.5986)<br/>Top-3: <strong>行政部</strong> (0.4860)<br/>Top-4: <strong>行政部</strong> (0.4457)<br/>Top-5: <strong>技术部</strong> (0.4299)</td>
+<td>0.7666</td>
+<td>存在明显部门越权公文噪音（行政部办公电脑、技术部服务器上线等混入候选集）。</td>
+</tr>
+<tr>
+<td><strong>实验组 B</strong></td>
+<td>标量前置过滤 (Filtered)<br/><code>department == '财务部' and effective_year &gt;= 2024</code></td>
+<td>Top-1: 财务部 (0.7666)<br/>Top-2: 财务部 (0.5986)<br/><em>其余全部排除</em></td>
+<td><strong>0.7666</strong></td>
+<td><strong>100% 绝对物理隔离！</strong> 2023 年历史废弃补贴及行政、技术等非目标部门条目被精准拦截，召回纯度 100%。</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="bug-hunting">三、 实战踩坑与生产防御细节（Bug Hunting）</h2>
+<h3 id="1-limit-output_fields">踩坑 1：未透传 <code>limit</code> 与 <code>output_fields</code> 参数</h3>
+<ul>
+<li><strong>现象</strong>：在 <code>search_with_scalar_filter</code> 中，函数签名定义了 <code>limit=3</code>，但在调用 <code>client.search()</code> 时未透传 <code>limit=limit</code>，导致 Milvus 采用内部默认值 10 返回，实验组 A 打印出了 Top-1 到 Top-5。</li>
+<li><strong>防御</strong>：
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">search_res</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">query_vector</span><span class="p">],</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span> <span class="k">if</span> <span class="n">filter_expr</span> <span class="k">else</span> <span class="s2">""</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>  <span class="c1"># 必须显式透传</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">output_fields</span><span class="o">=</span><span class="n">output_fields</span> <span class="k">if</span> <span class="n">output_fields</span> <span class="k">else</span> <span class="p">[</span><span class="s2">"text"</span><span class="p">,</span> <span class="s2">"department"</span><span class="p">,</span> <span class="s2">"doc_type"</span><span class="p">,</span> <span class="s2">"effective_year"</span><span class="p">],</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">search_params</span><span class="o">=</span><span class="p">{</span><span class="s2">"metric_type"</span><span class="p">:</span> <span class="s2">"COSINE"</span><span class="p">,</span> <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"ef"</span><span class="p">:</span> <span class="mi">64</span><span class="p">}},</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">)</span>
+</span></code></pre></div></li>
+</ul>
+<h3 id="2">踩坑 2：本地离线加载模型时的网络超时</h3>
+<ul>
+<li><strong>现象</strong>：在无网络沙箱中，<code>SentenceTransformer("BAAI/bge-small-zh-v1.5")</code> 默认尝试连接 hf-mirror 导致 403 策略拦截与耗时等待。</li>
+<li><strong>防御</strong>：明确显式指定 <code>local_files_only=True</code>，彻底切断在线版本检查，直接秒级从本地缓存读取权重。</li>
+</ul>
+<h3 id="3-load">踩坑 3：索引与集合的 Load 遗忘症</h3>
+<ul>
+<li><strong>现象</strong>：创建 Schema、插入数据并构建索引后，若未显式调用 <code>client.load_collection()</code>，搜索时引擎将直接报错抛出 <code>collection not loaded</code>。</li>
+<li><strong>防御</strong>：Milvus 采用显式内存管理机制，建索引（CPU/GPU密集型）与加载（RAM装载）在架构上严格解耦，检索前必须调用 <code>load_collection()</code>。</li>
+</ul>
+<hr />
+<h2 id="mock-interview">四、 面试级高频技术考察（Mock Interview）</h2>
+<h3 id="q1selectivity-001-hnsw-bitset">Q1：如果生产数据量达到数千万级，标量过滤条件的选择率（Selectivity）极低（如全库只有 0.01% 的数据符合条件），纯 HNSW 配合 Bitset 过滤会遇到什么性能瓶颈？业界如何优化？</h3>
+<ul>
+<li><strong>瓶颈本质</strong>：HNSW 图是基于全量向量拓扑构建的。当只有 0.01% 节点有效时，QueryNode 在高层高速公路跳转时，访问到的绝大部分邻居节点的 Bitset 标记均为 0（无效）。这会导致图遍历陷入“断路”或在大量无效节点间反复尝试回溯，检索延迟可能退化到比暴力扫描还慢！</li>
+<li><strong>优化解法</strong>：</li>
+<li><strong>自适应策略（Iterative Search / Fallback）</strong>：当过滤命中率极低时，Milvus 内部会评估成本，自动降级为对满足标量条件的 0.01% 数据进行暴力遍历（Brute Force），反而比图搜索快几个数量级；</li>
+<li><strong>分区键（Partition Key）</strong>：按高基数标量字段（如 <code>department</code>）设置物理分区，检索时直接在对应分区子图上跑 HNSW，彻底避免全库漫游；</li>
+<li><strong>标量与向量联合倒排</strong>。</li>
+</ul>
+<h3 id="q2milvus-flush-hnsw">Q2：Milvus 中新增的数据在没有落盘（Flush）并构建 HNSW 索引之前，为什么依然可以被实时检索出来？底层机制是什么？</h3>
+<ul>
+<li><strong>底层机理</strong>：Milvus 采用 <strong>Growing Segment + Sealed Segment 双轨检索机制</strong>：</li>
+<li><strong>Growing Segment（正在写入的内存缓冲段）</strong>：实时消费 WAL 日志，虽然尚未建立 HNSW 图索引，但数据已在内存中。QueryNode 对这部分最新数据采用 <strong>FLAT（暴力计算/SIMD向量点积）</strong> 快速比对；</li>
+<li><strong>Sealed Segment（已封口段）</strong>：历史成熟段，走已经构建好的 <strong>HNSW 索引</strong> 高速检索；</li>
+<li><strong>结果归并</strong>：QueryNode 将两者的检索结果（Growing 的暴力 Top-K 与 Sealed 的图 Top-K）在内存中做局部归并排序，合并吐出全局 Top-K，从而完美保障了数据的“实时写入，即刻可见（Read-Your-Writes）”。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

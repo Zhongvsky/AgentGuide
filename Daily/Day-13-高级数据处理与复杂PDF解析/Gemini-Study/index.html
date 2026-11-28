@@ -1,0 +1,1505 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="60天 AI Agent 与 Advanced RAG 工程落地指南">
+      
+      
+        <meta name="author" content="AgentGuide">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Day 13 · Advanced RAG：复杂文档版面分析与表格结构化解析深度复盘笔记 - AI Agent 开发工程实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day-13-advanced-rag" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="AI Agent 开发工程实战" class="md-header__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Agent 开发工程实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Day 13 · Advanced RAG：复杂文档版面分析与表格结构化解析深度复盘笔记
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至暗色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至暗色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页导读
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../learning-roadmap/" class="md-tabs__link">
+          
+  
+  
+  学习进度与路线
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-tabs__link">
+          
+  
+  
+  每日学习任务卡
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="AI Agent 开发工程实战" class="md-nav__button md-logo" aria-label="AI Agent 开发工程实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Agent 开发工程实战
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页导读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习进度与路线
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    学习进度与路线
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    60天路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    打卡进度追踪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../automation-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自动化陪练规范
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    每日学习任务卡
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    每日学习任务卡
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-01-FastAPI%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 01 - FastAPI 快速入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-02-LangChain%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 02 - LangChain 核心概念
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-03-RAG%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%88%86%E5%89%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 03 - RAG 加载与分割
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-04-RAG%E5%90%91%E9%87%8F%E5%8C%96%E4%B8%8E%E5%AD%98%E5%82%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 04 - RAG 向量化与存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-05-%E6%89%8B%E6%92%95NaiveRAG%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 05 - 手撕 Naive RAG 系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-06-NaiveRAG%E6%8E%A5%E5%8F%A3%E5%B0%81%E8%A3%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 06 - Naive RAG 接口封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-07-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EDocker%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 07 - 周度总结与 Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-08-QueryTransformation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 08 - Query Transformation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-09-HybridSearch-Rerank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 09 - 混合检索与 Rerank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-10-RAG%E8%AF%84%E4%BC%B0%E4%BD%93%E7%B3%BB/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 10 - RAG 评估体系与 Ragas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-11-RAG%E7%BB%BC%E5%90%88%E8%AF%84%E4%BC%B0%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%8C%96%E7%AE%A1%E7%BA%BF/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 11 - RAG 综合评估与自动化管线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-12-%E7%94%9F%E4%BA%A7%E7%BA%A7%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93Milvus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 12 - 生产级向量数据库 Milvus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-13-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E4%B8%8E%E5%A4%8D%E6%9D%82PDF%E8%A7%A3%E6%9E%90/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 13 - 高级数据处理与复杂PDF解析
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-14-%E5%91%A8%E5%BA%A6%E6%80%BB%E7%BB%93%E4%B8%8EAdvancedRAG%E7%B3%BB%E7%BB%9F%E5%8D%87%E7%BA%A7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 14 - 周度总结与Advanced RAG系统大升级
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-15-Agent%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%E4%B8%8EReAct%E6%A1%86%E6%9E%B6/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 15 - Agent 核心概念与 ReAct 框架实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-16-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E4%B8%8EToolCalling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 16 - 自定义工具开发与 Tool Calling 原生协议实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-17-SQL%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%B7%A5%E5%85%B7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 17 - SQL & 数据库工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-18-FunctionCalling%E5%AE%9E%E6%88%98/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 18 - Function Calling 实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../learning-cards/Day-19-ContextEngineering%E4%B8%8E%E8%AE%B0%E5%BF%86/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 19 - Context Engineering 与记忆
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、 核心知识点与架构心智模型
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="一、 核心知识点与架构心智模型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-sota" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 业界 SOTA 文档解析框架三代演进
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-gfm-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 表格矩阵还原为标准 GFM Markdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 双栏版面重构与空间几何噪音清洗
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-table-aware-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 表格感知语义分块 (Table-Aware Chunking)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、 真实 Benchmark 运行结果台账
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="二、 真实 Benchmark 运行结果台账">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-1-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 关卡 1：表格矩阵还原为标准 Markdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 关卡 2：双栏自然阅读序重构与公文噪音清洗
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 关卡 3：表格感知语义分块产出分布
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bug-hunting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、 实战踩坑与生产防御细节（Bug Hunting）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三、 实战踩坑与生产防御细节（Bug Hunting）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#10-indexed-off-by-one-bug" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        踩坑 1：0-indexed 下标越界导致的列表容量不足（Off-by-One Bug）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        踩坑 2：Markdown 语法规范与断言细节
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        踩坑 3：Python 内部函数对外部变量赋值导致的闭包作用域陷阱
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4tail-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        踩坑 4：超长正文分支的数据漏吞与末尾残留（Tail Missing）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5pydantic-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        踩坑 5：Pydantic v2 强类型契约校验
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mock-interview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、 面试级高频技术考察（Mock Interview）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="四、 面试级高频技术考察（Mock Interview）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-chunk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1：当遇到跨页长表格（比如上百行的财务报表），单个 Chunk 超过向量模型上下文长度限制时，工业级生产系统如何切分与重构？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-rag-markdown-json-html-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2：为什么在 RAG 链路中优先推荐将表格还原为 Markdown 而非 JSON 或 HTML？在什么特殊版面下 Markdown 会失效？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="day-13-advanced-rag">Day 13 · Advanced RAG：复杂文档版面分析与表格结构化解析深度复盘笔记</h1>
+<blockquote>
+<p>日期：2026-11-21（周六，提前通关）｜ 学习日：Day 13 / 60 ｜ 状态：已完成<br />
+阶段：第 2 周 · Advanced RAG 与生产级向量数据库<br />
+代码归档：<a href="file:///d:/Study/AgentGuide/learning/Daily/Day-13-高级数据处理与复杂PDF解析/day13.py"><code>day13.py</code></a></p>
+</blockquote>
+<hr />
+<h2 id="_1">一、 核心知识点与架构心智模型</h2>
+<p>在企业级 RAG 生产场景中，超过 80% 的高价值知识资产深陷在非结构化 PDF 文档中（财报、法律合同、双栏学术论文、招投标文件）。传统 Naive RAG 的纯文本提取器（如 PyPDF 或未作版面分析的 OCR）在面对复杂文档时会遭遇三大毁灭性灾难：
+1. <strong>表格结构彻底坍塌（Table Disintegration）</strong>：二维网格被压扁成一维流，表头与数据脱节，导致模型产生严重数值幻觉；
+2. <strong>多栏排版阅读乱序（Multi-Column Reading Disorder）</strong>：双栏研报被横向连读提取，左栏第一句与右栏第一句机械拼接，语义完全损毁；
+3. <strong>周期性公文噪音稀释（Running Headers &amp; Footers Pollution）</strong>：重复出现的页眉页脚与页码稀释向量检索的上下文相关度（Context Relevance）。</p>
+<p>Day 13 通过手撕核心几何算法与表格感知分块管线，彻底攻克了复杂版面还原的核心技术。</p>
+<h3 id="1-sota">1. 业界 SOTA 文档解析框架三代演进</h3>
+<ul>
+<li><strong>第一代（规则启发式）</strong>：<code>PyPDF</code> / <code>pdfplumber</code> / <code>Tesseract</code>，依赖字符流坐标启发式拼凑，无视觉版面感知；</li>
+<li><strong>第二代（级联多模型流水线）</strong>：<code>Unstructured.io</code> / 早期 <code>MinerU</code>，采用版面检测（YOLO/Detectron2）+ OCR + 表格结构识别（TSR）多模型串联，解析全面但依赖重、吞吐低；</li>
+<li><strong>第三代（面向 RAG 原生的统一拓扑树 AST）</strong>：<code>IBM Docling</code> / 新一代 <code>MinerU (magic-pdf)</code>，采用轻量自研视觉编码器（DocLayNet/TableFormer）直接输出抽象语法树（<code>DoclingDocument</code>），支持毫秒级轻量推理与父子层级上下文绑定。</li>
+</ul>
+<h3 id="2-gfm-markdown">2. 表格矩阵还原为标准 GFM Markdown</h3>
+<ul>
+<li><strong>几何网格重构</strong>：统计离散单元格的最大行数与列数（<code>max(row_idx) + 1</code>, <code>max(col_idx) + 1</code>），构建二维二维矩阵；</li>
+<li><strong>内容清洗</strong>：清洗单元格内部多余换行符与首尾空白，转换为平整单行文本；</li>
+<li><strong>标准 GFM 序列化</strong>：表头行、左对齐分隔线 <code>| :--- | :--- |</code> 以及数据行格式化对齐，输出通用且模型最易读的 Markdown 表格。</li>
+</ul>
+<h3 id="3">3. 双栏版面重构与空间几何噪音清洗</h3>
+<ul>
+<li><strong>上下边界截断</strong>：通过 <code>page_height * header_ratio</code> (顶部 8%) 和 <code>page_height * footer_ratio</code> (底部 92%) 将周期性出现的公文页眉页脚在几何空间上彻底物理剔除；</li>
+<li><strong>中线双栏解耦</strong>：以 <code>page_width / 2.0</code> 为界，根据元素几何中心 <code>(x0 + x1) / 2</code> 将内容严格分流为左栏与右栏；</li>
+<li><strong>自然阅读序恢复</strong>：左栏元素按 <code>y0</code> 自上而下阅读，读完后再自上而下阅读右栏，彻底恢复自然语义流。</li>
+</ul>
+<h3 id="4-table-aware-chunking">4. 表格感知语义分块 (Table-Aware Chunking)</h3>
+<ul>
+<li><strong>原子级保护（Atomic Protection）</strong>：表格绝不可使用常规滑动窗口按字数切碎，遇到表格必须将其作为独立完整的 Chunk 封装；</li>
+<li><strong>上下文注入（Context Injection）</strong>：表格前置注入所属章节标题（如 <code>【所属章节：第三章 差旅伙食及交通补贴细则】</code>），赋予表格完全自解释的语义。</li>
+</ul>
+<hr />
+<h2 id="benchmark">二、 真实 Benchmark 运行结果台账</h2>
+<p>执行命令：
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">uv</span> <span class="n">run</span> <span class="n">python</span> <span class="n">learning</span><span class="p">/</span><span class="n">Daily</span><span class="p">/</span><span class="n">Day</span><span class="p">-</span><span class="n">13</span><span class="p">-</span><span class="n">高级数据处理与复杂PDF解析</span><span class="p">/</span><span class="n">day13</span><span class="p">.</span><span class="n">py</span>
+</span></code></pre></div></p>
+<h3 id="1-1-markdown">1. 关卡 1：表格矩阵还原为标准 Markdown</h3>
+<p><div class="language-markdown highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>| 费用类别 | 报销标准上限（元/天） | 核销凭据要求 |
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>| :--- | :--- | :--- |
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>| 城市内交通费 | 80.00 | 滴滴出行发票或 出租车票据 |
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>| 住宿伙食补贴 | 120.00 | 包干核算，无需凭据 |
+</span></code></pre></div>
+- <strong>判定结果</strong>：<code>✅ 关卡 1 验收通过：表格保真度与 Markdown 语法完全合规！</code></p>
+<h3 id="2-2">2. 关卡 2：双栏自然阅读序重构与公文噪音清洗</h3>
+<ul>
+<li><strong>原始抽取交叉流</strong>：<code>['h1', 'l1', 'r1', 'l2', 'r2', 'f1']</code>（混入页眉 <code>h1</code>、页脚 <code>f1</code>，左右栏横向交叉）</li>
+<li><strong>清洗与重排后序列</strong>：<code>['l1', 'l2', 'r1', 'r2']</code></li>
+<li><strong>判定结果</strong>：<code>✅ 关卡 2 验收通过：双栏阅读序彻底恢复，页眉页脚公文噪音 100% 滤除！</code></li>
+</ul>
+<h3 id="3-3">3. 关卡 3：表格感知语义分块产出分布</h3>
+<ul>
+<li><strong>总切片数</strong>：3 个 Chunk</li>
+<li><strong>Chunk 1</strong> (<code>is_table=False</code>, len=82)：包含第三章标题 + 第一段交通报销规定；</li>
+<li><strong>Chunk 2</strong> (<code>is_table=True</code>, len=144)：独立保留完整表格，并前置注入 <code>【所属章节：第三章 差旅伙食及交通补贴细则】</code>；</li>
+<li><strong>Chunk 3</strong> (<code>is_table=False</code>, len=59)：表格之后的第四章审批权限正文。</li>
+<li><strong>判定结果</strong>：<code>✅ [VERIFICATION PASSED]: 高级文档版面分析与表格结构化处理全链路通过验收！</code></li>
+</ul>
+<hr />
+<h2 id="bug-hunting">三、 实战踩坑与生产防御细节（Bug Hunting）</h2>
+<h3 id="10-indexed-off-by-one-bug">踩坑 1：0-indexed 下标越界导致的列表容量不足（Off-by-One Bug）</h3>
+<ul>
+<li><strong>现象</strong>：构建二维网格 <code>grid = [["" for _ in range(max_cols)] for _ in range(max_rows)]</code> 时，<code>max_rows</code> 和 <code>max_cols</code> 直接取了单元格下标最大值 <code>2</code>，导致分配的列表只有 0, 1 两行两列，在插入第 2 行时报 <code>IndexError: list index out of range</code>。</li>
+<li><strong>防御</strong>：
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">max_rows</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_rows</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">row_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">max_cols</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_cols</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">col_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</span></code></pre></div>
+  显式将“最大索引”转换为“总行列长度（最大索引 + 1）”。</li>
+</ul>
+<h3 id="2markdown">踩坑 2：Markdown 语法规范与断言细节</h3>
+<ul>
+<li><strong>现象</strong>：生成的表格缺失空格 <code>|内容|</code>，且分隔线输出了居中格式 <code>|:---:|</code>，导致断言失败。</li>
+<li><strong>防御</strong>：统一采用 GFM 标准语法 <code>|</code> + <code>" | ".join(...)</code> + <code>|</code>，分隔线严格生成 <code>| :--- | :--- |</code>。</li>
+</ul>
+<h3 id="3python">踩坑 3：Python 内部函数对外部变量赋值导致的闭包作用域陷阱</h3>
+<ul>
+<li><strong>现象</strong>：在内部子函数 <code>flush</code> 中执行 <code>chunk_id += 1</code> 和 <code>text_buffer = []</code> 时，由于在闭包内进行了赋值，Python 自动将其判定为内部局部变量，引发 <code>UnboundLocalError</code>。</li>
+<li><strong>防御</strong>：显式使用 <code>nonlocal chunk_id, current_length, text_buffer</code> 声明外层变量的作用域所有权。</li>
+</ul>
+<h3 id="4tail-missing">踩坑 4：超长正文分支的数据漏吞与末尾残留（Tail Missing）</h3>
+<ul>
+<li><strong>现象</strong>：</li>
+<li>当正文超出 <code>max_chunk_chars</code> 调用 <code>flush()</code> 后，导致超长的新正文未被追加进新的 <code>text_buffer</code>；</li>
+<li>循环遍历结束后，未检查 <code>if text_buffer:</code>，导致文档末尾的最后一段正文被遗留在内存中。</li>
+<li><strong>防御</strong>：
+  在 <code>flush()</code> 之后将当前元素放入清空后的购物车；且在主循环结束后执行兜底 <code>if text_buffer: flush()</code>。</li>
+</ul>
+<h3 id="5pydantic-v2">踩坑 5：Pydantic v2 强类型契约校验</h3>
+<ul>
+<li><strong>现象</strong>：实例化 <code>DocumentChunk</code> 时直接传入整型 <code>chunk_id = 0</code>，触发 Pydantic v2 核心校验报错 <code>Input should be a valid string [type=string_type, input_value=0, input_type=int]</code>。</li>
+<li><strong>防御</strong>：严格遵守数据契约，格式化为标准字符串：<code>chunk_id=f"chunk_{chunk_id:03d}"</code>。</li>
+</ul>
+<hr />
+<h2 id="mock-interview">四、 面试级高频技术考察（Mock Interview）</h2>
+<h3 id="q1-chunk">Q1：当遇到跨页长表格（比如上百行的财务报表），单个 Chunk 超过向量模型上下文长度限制时，工业级生产系统如何切分与重构？</h3>
+<ul>
+<li><strong>解答</strong>：</li>
+<li><strong>按行切片与表头继承（Header Duplication）</strong>：
+     绝对不能按列纵向切割，必须按行横向分块（Row-wise Chunking）。每个切片子块强制复制并保留<strong>第 1 行原表头、第 2 行分隔线以及顶部的章节上下文标题</strong>。这样当下半截切片被单独检索召回时，大模型依然能通过表头读懂每个数字对应的列含义；</li>
+<li><strong>行级自然语言序列化（Table-to-Text / Row-to-Natural-Language）</strong>：
+     在金融等高敏感场景中，将表格的每一行通过模板或轻量模型转化为自解释陈述句（如：“在【2026年第一季度】中，【华东分公司】的【营业收入】为【5000万元】”），极大提升语义匹配度。</li>
+</ul>
+<h3 id="q2-rag-markdown-json-html-markdown">Q2：为什么在 RAG 链路中优先推荐将表格还原为 Markdown 而非 JSON 或 HTML？在什么特殊版面下 Markdown 会失效？</h3>
+<ul>
+<li><strong>解答</strong>：</li>
+<li><strong>为什么是 Markdown</strong>：<ul>
+<li><strong>Token 经济性极高</strong>：相比 HTML（繁重的 <code>&lt;tr&gt;&lt;td&gt;</code> 标签）和 JSON（大量重复的键名 key），Markdown 仅用管道符 <code>|</code> 分隔，在长表格下节省 40%~60% 的 Token 开销；</li>
+<li><strong>预训练数据对齐</strong>：主流大模型（GPT-4、Claude、Qwen、DeepSeek）在预训练与指令微调时接触了海量 Markdown 表格，对其空间矩阵理解能力最强。</li>
+</ul>
+</li>
+<li><strong>何时 Markdown 会失效</strong>：<ul>
+<li><strong>复杂跨行跨列（Rowspan / Colspan）</strong>：Markdown 原生语法不支持单元格合并；当遇到多级复合表头（如大表头下包含两个子列）时，Markdown 会强制拉平导致层级丢失。此时必须降级退回 <strong>HTML 表格</strong> 或 <strong>JSON 树状结构</strong>。</li>
+</ul>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
