@@ -19,6 +19,7 @@ import json
 import time
 from typing import List, Dict, Any, Literal, Callable
 
+from langchain.messages import HumanMessage
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
@@ -77,7 +78,9 @@ class ISPBugTicket(BaseModel):
 
     chip_platform: str = Field(description="芯片平台名称，如 SA8155 / Snapdragon8Gen3")
     module_name: str = Field(description="涉事 ISP 模块名，如 FGF / MFNR / TMC")
-    defect_type: str = Field(description="画质缺陷类型，如 Halo / Ghosting / ColorCast / Noise")
+    defect_type: str = Field(
+        description="画质缺陷类型，如 Halo / Ghosting / ColorCast / Noise"
+    )
     severity: Literal["HIGH", "MEDIUM", "LOW"] = Field(description="严重程度等级")
     suspected_params: List[str] = Field(
         default_factory=list, description="文本中提及的可疑参数名列表"
@@ -88,15 +91,42 @@ class ISPBugTicket(BaseModel):
 def lookup_isp_param_baseline(module_name: str, param_name: str) -> str:
     """内置 ISP 参数基线查询函数（供 Function Calling 调度使用）"""
     baselines = {
-        ("FGF", "guide_radius"): {"safe_range": [2.0, 5.0], "recommended": 4.0, "unit": "px"},
-        ("FGF", "smooth_eps"): {"safe_range": [0.005, 0.03], "recommended": 0.015, "unit": "norm"},
-        ("MFNR", "temporal_weight"): {"safe_range": [0.3, 0.65], "recommended": 0.5, "unit": "ratio"},
-        ("TMC", "highlight_compress"): {"safe_range": [0.2, 0.5], "recommended": 0.35, "unit": "ratio"},
+        ("FGF", "guide_radius"): {
+            "safe_range": [2.0, 5.0],
+            "recommended": 4.0,
+            "unit": "px",
+        },
+        ("FGF", "smooth_eps"): {
+            "safe_range": [0.005, 0.03],
+            "recommended": 0.015,
+            "unit": "norm",
+        },
+        ("MFNR", "temporal_weight"): {
+            "safe_range": [0.3, 0.65],
+            "recommended": 0.5,
+            "unit": "ratio",
+        },
+        ("TMC", "highlight_compress"): {
+            "safe_range": [0.2, 0.5],
+            "recommended": 0.35,
+            "unit": "ratio",
+        },
     }
     key = (module_name.upper(), param_name)
     if key in baselines:
-        return json.dumps({"found": True, "module": module_name, "param": param_name, **baselines[key]}, ensure_ascii=False)
-    return json.dumps({"found": False, "message": f"未收录 {module_name}.{param_name} 的基线配置"}, ensure_ascii=False)
+        return json.dumps(
+            {
+                "found": True,
+                "module": module_name,
+                "param": param_name,
+                **baselines[key],
+            },
+            ensure_ascii=False,
+        )
+    return json.dumps(
+        {"found": False, "message": f"未收录 {module_name}.{param_name} 的基线配置"},
+        ensure_ascii=False,
+    )
 
 
 def estimate_fix_priority(severity: str, defect_type: str) -> str:
@@ -108,7 +138,9 @@ def estimate_fix_priority(severity: str, defect_type: str) -> str:
         sla = "P1-本周迭代修复"
     else:
         sla = "P2-下个版本排期"
-    return json.dumps({"severity": sev, "defect_type": defect_type, "sla": sla}, ensure_ascii=False)
+    return json.dumps(
+        {"severity": sev, "defect_type": defect_type, "sla": sla}, ensure_ascii=False
+    )
 
 
 # ==========================================
@@ -131,8 +163,13 @@ def extract_isp_bug_ticket(llm: ChatOpenAI, raw_report: str) -> ISPBugTicket:
     - 严禁依赖手工硬编码正则匹配特定测试文本。
     """
     # TODO 1: 实现结构化抽取
-    raise NotImplementedError(
-        "【关卡 1 待实现】：请实现 extract_isp_bug_ticket！完成后删除本行。"
+    structured_llm = llm.with_structured_output(ISPBugTicket, method="function_calling")
+    return structured_llm.invoke(
+        [
+            HumanMessage(
+                f"请从以下 ISP 画质缺陷报告中提取结构化字段，severity 只能取 HIGH / MEDIUM / LOW。\n\n报告内容：{raw_report}"
+            )
+        ]
     )
 
 
@@ -172,9 +209,78 @@ def run_native_openai_fc(
     - "total_steps": int（实际经历的 API 请求轮数）
     """
     # TODO 2: 实现原生 OpenAI Function Calling 闭环
-    raise NotImplementedError(
-        "【关卡 2 待实现】：请实现 run_native_openai_fc！完成后删除本行。"
-    )
+
+    final_answer = f"Not get the final answer within {max_steps} steps"
+    called_tools = []
+    messages = [
+        {
+            "role": "system",
+            "content": "你是严谨的 ISP 算法诊断助手，请按需调用工具获取真实参数基线与排期后再回答，不要凭空猜测",
+        },
+        {"role": "user", "content": user_query},
+    ]
+    for step in range(max_steps):
+        resp = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            tools=tools_schema,
+            tool_choice="auto",
+        )
+
+        msg = resp.choices[0].message
+
+        if not msg.tool_calls:
+            messages.append({"role": "assistant", "content": msg.content or ""})
+            return {
+                "final_answer": msg.content,
+                "called_tools": called_tools,
+                "total_steps": step + 1,
+            }
+        else:
+            _tool_calls = []
+            for tool_call in msg.tool_calls:
+                _tool_calls.append(
+                    {
+                        "id": tool_call.id,
+                        "type": tool_call.type,
+                        "function": {
+                            "name": tool_call.function.name,
+                            "arguments": tool_call.function.arguments,
+                        },
+                    }
+                )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": msg.content or "",
+                    "tool_calls": _tool_calls,
+                }
+            )
+            for tool_call in msg.tool_calls:
+                tool_name = tool_call.function.name
+                if tool_name in tool_registry:
+                    tool = tool_registry[tool_name]
+                    try:
+                        arguments = json.loads(tool_call.function.arguments)
+                        tool_res = tool(**arguments)
+                        called_tools.append(tool_name)
+                    except Exception as e:
+                        tool_res = f"Tool Call Failed. Error: {str(e)}"
+                else:
+                    tool_res = f"Tool: {tool_name} Not Found in tool_registry: {tool_registry.keys()}"
+
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": tool_res,
+                    }
+                )
+    return {
+        "final_answer": final_answer,
+        "called_tools": called_tools,
+        "total_steps": max_steps,
+    }
 
 
 # ==========================================
@@ -208,9 +314,69 @@ def run_isp_triage_pipeline(
     - "called_tools": List[str]（分诊阶段实际调用过的工具名列表）
     """
     # TODO 3: 实现端到端分诊流水线
-    raise NotImplementedError(
-        "【关卡 3 待实现】：请实现 run_isp_triage_pipeline！完成后删除本行。"
+
+    isp_bug_ticket: ISPBugTicket = extract_isp_bug_ticket(llm, raw_report)
+
+    fc_tools_schema = [
+        {
+            "type": "function",
+            "function": {
+                "name": "lookup_isp_param_baseline",
+                "description": "查询指定 ISP 模块参数的安全基线范围与推荐默认值",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "module_name": {
+                            "type": "string",
+                            "description": "ISP 模块名，如 FGF / MFNR / TMC",
+                        },
+                        "param_name": {
+                            "type": "string",
+                            "description": "参数名称，如 guide_radius",
+                        },
+                    },
+                    "required": ["module_name", "param_name"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "estimate_fix_priority",
+                "description": "根据严重度与缺陷类型评估 SLA 修复排期优先级",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "severity": {
+                            "type": "string",
+                            "enum": ["HIGH", "MEDIUM", "LOW"],
+                        },
+                        "defect_type": {"type": "string", "description": "缺陷类型"},
+                    },
+                    "required": ["severity", "defect_type"],
+                },
+            },
+        },
+    ]
+    fc_registry = {
+        "lookup_isp_param_baseline": lookup_isp_param_baseline,
+        "estimate_fix_priority": estimate_fix_priority,
+    }
+
+    query = (
+        f"请对以下已结构化的 ISP 缺陷工单进行分诊核查：\n"
+        f"{isp_bug_ticket.model_dump_json(ensure_ascii=False)}\n"
+        "分诊要求：1) 若工单包含可疑参数，核查其基线安全范围；"
+        "2) 评估修复 SLA 优先级；3) 给出综合分诊建议。"
     )
+
+    res = run_native_openai_fc(client, model, query, fc_tools_schema, fc_registry)
+
+    return {
+        "ticket": isp_bug_ticket,
+        "triage_report": res["final_answer"],
+        "called_tools": res["called_tools"],
+    }
 
 
 # ==========================================
@@ -237,10 +403,16 @@ if __name__ == "__main__":
     )
     ticket1 = extract_isp_bug_ticket(llm, sample_report_1)
     assert isinstance(ticket1, ISPBugTicket), "返回值必须为 ISPBugTicket 实例"
-    assert "SA8155" in ticket1.chip_platform, f"芯片平台抽取错误: {ticket1.chip_platform}"
-    assert "FGF" in ticket1.module_name.upper(), f"模块名抽取错误: {ticket1.module_name}"
+    assert (
+        "SA8155" in ticket1.chip_platform
+    ), f"芯片平台抽取错误: {ticket1.chip_platform}"
+    assert (
+        "FGF" in ticket1.module_name.upper()
+    ), f"模块名抽取错误: {ticket1.module_name}"
     assert ticket1.severity == "HIGH", f"严重度抽取错误: {ticket1.severity}"
-    assert "guide_radius" in ticket1.suspected_params, f"可疑参数漏抽: {ticket1.suspected_params}"
+    assert (
+        "guide_radius" in ticket1.suspected_params
+    ), f"可疑参数漏抽: {ticket1.suspected_params}"
     print(f"✅ 关卡 1 通过：抽取结果 -> {ticket1.model_dump_json(indent=2)}\n")
 
     # ------------------------------------------
@@ -257,8 +429,14 @@ if __name__ == "__main__":
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "module_name": {"type": "string", "description": "ISP 模块名，如 FGF / MFNR / TMC"},
-                        "param_name": {"type": "string", "description": "参数名称，如 guide_radius"},
+                        "module_name": {
+                            "type": "string",
+                            "description": "ISP 模块名，如 FGF / MFNR / TMC",
+                        },
+                        "param_name": {
+                            "type": "string",
+                            "description": "参数名称，如 guide_radius",
+                        },
                     },
                     "required": ["module_name", "param_name"],
                 },
@@ -272,7 +450,10 @@ if __name__ == "__main__":
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "severity": {"type": "string", "enum": ["HIGH", "MEDIUM", "LOW"]},
+                        "severity": {
+                            "type": "string",
+                            "enum": ["HIGH", "MEDIUM", "LOW"],
+                        },
                         "defect_type": {"type": "string", "description": "缺陷类型"},
                     },
                     "required": ["severity", "defect_type"],
@@ -291,11 +472,15 @@ if __name__ == "__main__":
         tools_schema=fc_tools_schema,
         tool_registry=fc_registry,
     )
-    assert "lookup_isp_param_baseline" in fc_res["called_tools"], f"未调用基线查询工具: {fc_res}"
-    assert "4.0" in fc_res["final_answer"] or "4" in fc_res["final_answer"], (
-        f"回答未包含查询到的推荐值: {fc_res['final_answer']}"
+    assert (
+        "lookup_isp_param_baseline" in fc_res["called_tools"]
+    ), f"未调用基线查询工具: {fc_res}"
+    assert (
+        "4.0" in fc_res["final_answer"] or "4" in fc_res["final_answer"]
+    ), f"回答未包含查询到的推荐值: {fc_res['final_answer']}"
+    print(
+        f"✅ 关卡 2 通过：原生 FC 共 {fc_res['total_steps']} 轮，调用工具 {fc_res['called_tools']}"
     )
-    print(f"✅ 关卡 2 通过：原生 FC 共 {fc_res['total_steps']} 轮，调用工具 {fc_res['called_tools']}")
     print(f"   回复摘要: {fc_res['final_answer'][:150]}...\n")
 
     # ------------------------------------------
@@ -313,10 +498,12 @@ if __name__ == "__main__":
     assert isinstance(triage["ticket"], ISPBugTicket)
     assert "lookup_isp_param_baseline" in triage["called_tools"], "分诊未核查参数基线"
     assert "estimate_fix_priority" in triage["called_tools"], "分诊未评估修复排期"
-    assert "P1" in triage["triage_report"] or "0.5" in triage["triage_report"], (
-        f"分诊报告遗漏关键结论: {triage['triage_report']}"
+    assert (
+        "P1" in triage["triage_report"] or "0.5" in triage["triage_report"]
+    ), f"分诊报告遗漏关键结论: {triage['triage_report']}"
+    print(
+        f"✅ 关卡 3 通过：耗时 {elapsed_ms:.2f} ms | 调用工具: {triage['called_tools']}"
     )
-    print(f"✅ 关卡 3 通过：耗时 {elapsed_ms:.2f} ms | 调用工具: {triage['called_tools']}")
     print(f"   分诊结论:\n{triage['triage_report']}\n")
     print("=" * 80)
     print("🎉 [PASSED]: Day 18 关卡全通！Function Calling 与结构化抽取闭环通关！")

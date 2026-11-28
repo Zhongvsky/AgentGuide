@@ -2,8 +2,8 @@
 
 ## 节奏设定
 
-- **学习日**：每周一、周二、周三推送（3 天/周）｜2026-10-22 起调整，原为周一至周四
-- **休息日**：每周四、周五、周六、周日，不推送、不推进 Day
+- **学习节奏**：按需推进（不限周几），触发且未锁定即推进当前学习日（2026-11-28 起取消“每周一至周三学习、周四至周日休息”的星期限制）
+- **时间预算**：单次实操约 2 小时（有效纯编码 + 调试控制在 ~90 分钟内）
 - **start_date**: 2026-10-20（周二，第 1 个学习日）
 - **预计完成**: 2027-03-09（周二，第 60 个学习日），全程约 20 周
 - 说明：「Day N」= 第 N 个学习日，**不是自然日**；进度只由 next_day 驱动，不按日期差推算
@@ -11,10 +11,10 @@
 
 ## 当前状态
 
-- **next_day**: 19（下一个待下发的学习日）
+- **next_day**: 20（下一个待下发的学习日）
 - **next_day 锁定**: 否（设为「是」时忽略自动推进，用于暂停或跳级）
-- **已下发学习日数**: 18
-- **已完成学习日数**: 17（Day 1-17，SQL 数据库工具与 Text-to-SQL Agent 闭环全通）
+- **已下发学习日数**: 19
+- **已完成学习日数**: 18（Day 1-18，OpenAI 原生 Function Calling 与 Pydantic 结构化抽取闭环全通）
 - **连续未完成**: 0
 - **待下发草稿**: 无
 - **路线图**: learning/learning-roadmap.md
@@ -43,7 +43,8 @@
 | 15 | 2026-11-24 周二 | Agent 核心概念与 ReAct 框架 | ①ToolRegistry 强类型工具注册与校验 ②ReActParser 状态机解析 ③端到端 Agent 多步推理与工具调用闭环 | 已完成 | 手撕 ToolRegistry 强类型工具注册表（Pydantic Schema 自动化与异常拦截）、ReActParser 状态机文本解析器（优先捕获 Final Answer 与 JSON 容错清洗）、ReActAgentLoop 核心循环引擎；攻克 AIMessage 序列化拖尾导致 Extra data 缺陷与推理大模型 reasoning_tokens 配额击穿两大工业级暗坑；实测端到端两轮工具调用（计算 SNR=17.5dB + ISP 缺陷规程匹配）输出严谨诊断建议，三道关卡全绿灯通过！ |
 | 16 | 2026-11-25 周三 | 自定义工具开发与 Tool Calling | ①@tool 装饰器轻量级封装 ②继承 BaseTool 深度定制与异常自愈 ③原生 Tool Calling 端到端闭环 | 已完成 | 手撕 `@tool`（`calc_halo_overshoot`）与继承 `BaseTool`（`ISPExposureGainTool`）双模式强类型工具，并实现 `run_native_tool_agent` 原生并发调度引擎；排查并修复 `ToolMessage(tool_call_id=...)` 参数名、`tool_call_history` 键名对齐及 `raise` 字符串异常；连接本地端点（`auto/hy4flash-free`）2 轮交互完成并发双工具调用（`total_gain=160.0` + `halo_risk_index=4.5`）并输出完整 ISP 调试优化诊断书，三大关卡全绿灯通关！ |
 | 17 | 2026-11-30 周一 | SQL & 数据库工具 | ①SQLite Schema 自动探查 ②只读安全 SQL 执行器（防注入与自愈） ③端到端 Text-to-SQL Agent 闭环 | 已完成 | 手撕 `sqlite_master` DDL 探查、词法+`mode=ro` 双保险只读执行器、以及 `BaseTool` 私有字段（`self.db_path`）与 `args_schema` 解耦的原生 Tool Calling Agent；攻克末尾分号误杀、`not A or B` 优先级、异常 JSON 序列化及 `db_path` 暴露给 LLM 导致死循环四大暗坑；4 轮交互（12877.52 ms）自主完成值域探查与多表 `JOIN` 精准输出 `SA8155`/`FGF`/`v2.1` 诊断表，全绿灯通关！ |
-| 18 | 2026-12-01 周二 | Function Calling 实战 | ①Strict Schema 抽取 `ISPBugTicket` ②原生 `tool_calls` 循环与分发表 ③两段式分诊（超时可顺延至次日 30min 收尾） | 待打卡 | — |
+| 18 | 2026-11-28 周六 | Function Calling 实战 | ①Strict Schema 抽取 `ISPBugTicket` ②原生 `tool_calls` 循环与分发表 ③两段式分诊（超时可顺延至次日 30min 收尾） | 已完成 | 手撕 Pydantic 结构化抽取、原生 `openai.OpenAI` Function Calling 循环及两段式 ISP 分诊流水线；排查并攻克兼容端点忽略 `response_format.json_schema` 导致字段幻觉（切换 `method="function_calling"`）、原生 `msg.tool_calls` 纯字典序列化、以及多行隐式拼接误加逗号变 `tuple` 三大实战暗坑；全量测试 13332.26 ms 绿灯通关！ |
+| 19 | 待定 | Context Engineering 与记忆 | ①大工具输出首尾截断 ②原子组保护+摘要窗口裁剪 ③SQLite 轻量持久化 `SessionStore` | 待打卡 | — |
 
 ## 周度里程碑（按学习日，3 天/周节奏）
 
@@ -64,7 +65,7 @@
 - 已有 → 不新建卡片、不追加记录、不推进 next_day，只回一句「今天已下发 Day N」
 - 手动提前触发后，8:00 的定时仍会照常触发，靠上述检查挡住第二次
 - 唯一例外：明确要求「重新生成今天的任务」时覆盖卡片，但仍不推进 next_day
-- **周四/周五/周六/周日**：不推进新内容；若被手动触发，只输出休息日复盘卡，绝不消耗 next_day
+- **暂停推进**：仅当 `next_day 锁定` 设为「是」时暂停推进新内容，只做答疑与复盘
 
 ## 欠账与调整记录
 
